@@ -1,0 +1,1162 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WebRemote — Day/Night Ocean</title>
+    <style>
+        html, body { width:100%; height:100%; margin:0; overflow:hidden; background:#02040b; }
+        .masthead, #con { width:100%; height:100%; }
+        canvas { display:block; width:100%; height:100%; }
+    </style>
+</head>
+<body>
+<header class="masthead"><div id="con"></div></header>
+<script src="js/three.min.js"></script>
+<script src="js/Water_v2.js"></script>
+<script src="js/Sky.js"></script>
+<script>
+var container, camera, scene, renderer;
+var sky, water;
+var sunLight, textLight, moonLight, hemisphereLight;
+var textFrontLight, textRimLight, textSunLight, textGlintLight;
+var cubeCamera;
+var cubeUpdateTimer = 0;
+var cubeUpdateInterval = 0.5;
+var stars, moon;
+var clouds = [];
+var sunriseGlow;
+var group, textMesh1, textGeo, materials;
+
+var mouseX = 0;
+var mouseY = 0;
+var windowHalfX = window.innerWidth / 2;
+var windowHalfY = window.innerHeight / 2;
+var cameraBaseX = 30;
+var cameraBaseY = 25;
+var previousTime = performance.now();
+
+var parameters = { distance: 400 };
+
+var text = "WebRemote";
+var height = 3;
+var size = 14;
+var font;
+var fontName = "droid_sans";
+var fontWeight = "bold";
+
+/*
+ * 0.00 — рассвет
+ * 0.25 — день
+ * 0.50 — закат
+ * 0.75 — ночь
+ * 1.00 — новый рассвет
+ */
+var timeOfDay = 0.00;
+
+/*
+ * 0.001 = ~16 мин 40 сек
+ * 0.002 = ~8 мин 20 сек
+ * 0.005 = ~3 мин 20 сек
+ * 0.010 = ~1 мин 40 сек
+ */
+var dayNightSpeed = 0.001;
+
+var dayWaterColor = new THREE.Color(0x020835);
+var sunsetWaterColor = new THREE.Color(0x241024);
+var nightWaterColor = new THREE.Color(0x00030c);
+
+var dayTextFront = new THREE.Color(0xd8c992);
+var nightTextFront = new THREE.Color(0xa9bad2);
+var dayTextSide = new THREE.Color(0x827449);
+var nightTextSide = new THREE.Color(0x43546f);
+
+
+/*
+ * Упрощённая физика плавучести текста.
+ * Water.js визуально двигает нормали, но сама плоскость воды остаётся ровной,
+ * поэтому для качания используется отдельная модель волн.
+ */
+var floatingPhysics = {
+    baseY: -100.15,
+    y: -100.15,
+    velocityY: 0,
+
+    pitch: 0,
+    pitchVelocity: 0,
+
+    roll: 0,
+    rollVelocity: 0,
+
+    yaw: 0,
+    yawVelocity: 0,
+
+    mass: 4.6,
+    buoyancy: 7.2,
+    verticalDamping: 5.8,
+    angularSpring: 8.0,
+    angularDamping: 4.1
+};
+
+var floatingWidth = 72;
+var floatingDepth = 8;
+
+init();
+requestAnimationFrame(animate);
+
+function init() {
+    container = document.getElementById("con");
+
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    var maxPixelRatio = window.innerWidth < 768 ? 1.2 : 1.5;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    if (THREE.sRGBEncoding !== undefined) {
+        renderer.outputEncoding = THREE.sRGBEncoding;
+    }
+
+    container.appendChild(renderer.domElement);
+
+    scene = new THREE.Scene();
+
+    camera = new THREE.PerspectiveCamera(
+        55,
+        window.innerWidth / window.innerHeight,
+        1,
+        20000
+    );
+    camera.position.set(30, 25, 160);
+
+    createLights();
+    createTextGroup();
+    createWater();
+    createSky();
+    createStars();
+    createMoon();
+    createClouds();
+    loadFont();
+
+    document.addEventListener("mousemove", onDocumentMouseMove, false);
+    document.addEventListener("touchstart", onDocumentTouchStart, { passive: true });
+    document.addEventListener("touchmove", onDocumentTouchMove, { passive: true });
+    window.addEventListener("resize", onWindowResize, false);
+
+    updateDayNightCycle(0);
+}
+
+function createLights() {
+    hemisphereLight = new THREE.HemisphereLight(0xbfd8ff, 0x08050c, 0.55);
+    scene.add(hemisphereLight);
+
+    sunLight = new THREE.DirectionalLight(0xfff4d6, 1.0);
+    scene.add(sunLight);
+
+    textLight = new THREE.PointLight(0xffd58a, 1.4, 220, 2);
+    textLight.position.set(60, 40, 50);
+    scene.add(textLight);
+
+    moonLight = new THREE.DirectionalLight(0x90aaff, 0);
+    scene.add(moonLight);
+
+    textFrontLight = new THREE.PointLight(0xdde8ff, 0.9, 350, 2);
+    textFrontLight.position.set(0, 45, 130);
+    scene.add(textFrontLight);
+
+    textRimLight = new THREE.PointLight(0x6f9fff, 0.65, 300, 2);
+    textRimLight.position.set(-100, 35, 60);
+    scene.add(textRimLight);
+
+    textSunLight = new THREE.PointLight(0xffa050, 0, 350, 2);
+    textSunLight.position.set(70, 40, 80);
+    scene.add(textSunLight);
+
+    textGlintLight = new THREE.PointLight(0xffffff, 0.55, 100, 2);
+    textGlintLight.position.set(-80, 8, 45);
+    scene.add(textGlintLight);
+}
+
+function createTextGroup() {
+    materials = [
+        new THREE.MeshStandardMaterial({
+            color: 0xe8d9ae,
+            metalness: 0.58,
+            roughness: 0.28
+        }),
+        new THREE.MeshStandardMaterial({
+            color: 0x76613d,
+            metalness: 0.42,
+            roughness: 0.38
+        })
+    ];
+
+    group = new THREE.Group();
+    group.position.y = 100;
+    scene.add(group);
+}
+
+function createWater() {
+    var waterSegments =
+        window.innerWidth < 768 ? 80 : 160;
+
+    var waterGeometry =
+        new THREE.PlaneBufferGeometry(
+            10000,
+            10000,
+            waterSegments,
+            waterSegments
+        );
+
+    water = new THREE.Water(waterGeometry, {
+        textureWidth: 512,
+        textureHeight: 512,
+
+        waterNormals: new THREE.TextureLoader().load(
+            "img/waternormals.jpg",
+            function (texture) {
+                texture.wrapS = THREE.RepeatWrapping;
+                texture.wrapT = THREE.RepeatWrapping;
+            }
+        ),
+
+        alpha: 1.0,
+
+        sunDirection:
+            sunLight.position
+                .clone()
+                .normalize(),
+
+        sunColor: 0xffffff,
+        waterColor: dayWaterColor,
+        distortionScale: 3.7,
+
+        // Настоящие геометрические волны
+        waveAmplitude: 1.0,
+        waveSpeed: 1.0,
+        waveScale: 1.0,
+
+        // Лёгкая пена на гребнях
+        foamColor: 0xdbe9f4,
+        foamStrength: 0.16,
+        foamThreshold: 0.62,
+
+        fog: false
+    });
+
+    water.rotation.x = -Math.PI / 2;
+    scene.add(water);
+}
+
+function createSky() {
+    sky = new THREE.Sky();
+    sky.scale.setScalar(10000);
+    scene.add(sky);
+
+    cubeCamera = new THREE.CubeCamera(1, 20000, 128);
+    scene.add(cubeCamera);
+
+    var uniforms = sky.material.uniforms;
+    uniforms["turbidity"].value = 10;
+    uniforms["rayleigh"].value = 2;
+    if (uniforms["luminance"]) uniforms["luminance"].value = 1;
+    uniforms["mieCoefficient"].value = 0.008;
+    uniforms["mieDirectionalG"].value = 0.8;
+}
+
+function createStars() {
+    var geometry = new THREE.BufferGeometry();
+    var positions = [];
+    var starCount = window.innerWidth < 768 ? 600 : 1400;
+
+    for (var i = 0; i < starCount; i++) {
+        var radius = 6500 + Math.random() * 1800;
+        var theta = Math.random() * Math.PI * 2;
+        var phi = 0.10 + Math.random() * 1.35;
+
+        var x = radius * Math.sin(phi) * Math.cos(theta);
+        var y = Math.abs(radius * Math.cos(phi)) + 200;
+        var z = radius * Math.sin(phi) * Math.sin(theta);
+
+        positions.push(x, y, z);
+    }
+
+    geometry.addAttribute(
+        "position",
+        new THREE.Float32BufferAttribute(positions, 3)
+    );
+
+    var material = new THREE.PointsMaterial({
+        color: 0xdceaff,
+        size: 9,
+        sizeAttenuation: true,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false
+    });
+
+    stars = new THREE.Points(geometry, material);
+    scene.add(stars);
+}
+
+function createMoonTexture() {
+    var canvas = document.createElement("canvas");
+    canvas.width = 512;
+    canvas.height = 512;
+
+    var ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, 512, 512);
+
+    var cx = 256;
+    var cy = 256;
+    var radius = 150;
+
+    // Мягкое холодное свечение вокруг полной луны.
+    var glow = ctx.createRadialGradient(
+        cx, cy, radius * 0.72,
+        cx, cy, radius * 1.62
+    );
+
+    glow.addColorStop(0.00, "rgba(210,225,255,0.28)");
+    glow.addColorStop(0.35, "rgba(145,175,230,0.16)");
+    glow.addColorStop(0.72, "rgba(95,130,205,0.07)");
+    glow.addColorStop(1.00, "rgba(70,105,185,0)");
+
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius * 1.62, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Основной диск полной луны.
+    var moonGradient = ctx.createRadialGradient(
+        cx - 48, cy - 58, 18,
+        cx, cy, radius
+    );
+
+    moonGradient.addColorStop(0.00, "#fffdf0");
+    moonGradient.addColorStop(0.30, "#edf0e7");
+    moonGradient.addColorStop(0.63, "#c9cdd0");
+    moonGradient.addColorStop(0.86, "#a3aab4");
+    moonGradient.addColorStop(1.00, "#7d8796");
+
+    ctx.fillStyle = moonGradient;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Крупные и мелкие лунные моря/кратеры.
+    var features = [
+        { x: 205, y: 202, r: 31, a: 0.15 },
+        { x: 292, y: 184, r: 22, a: 0.12 },
+        { x: 332, y: 238, r: 36, a: 0.16 },
+        { x: 222, y: 292, r: 27, a: 0.13 },
+        { x: 282, y: 322, r: 20, a: 0.11 },
+        { x: 177, y: 252, r: 16, a: 0.10 },
+        { x: 321, y: 306, r: 15, a: 0.09 },
+        { x: 249, y: 158, r: 12, a: 0.08 },
+        { x: 270, y: 244, r: 18, a: 0.08 },
+        { x: 212, y: 242, r: 11, a: 0.07 },
+        { x: 304, y: 270, r: 10, a: 0.07 },
+        { x: 248, y: 348, r: 9,  a: 0.06 }
+    ];
+
+    for (var i = 0; i < features.length; i++) {
+        var f = features[i];
+
+        var featureGradient = ctx.createRadialGradient(
+            f.x - f.r * 0.30,
+            f.y - f.r * 0.30,
+            f.r * 0.08,
+            f.x,
+            f.y,
+            f.r
+        );
+
+        featureGradient.addColorStop(
+            0.00,
+            "rgba(255,255,245," + (f.a * 0.34) + ")"
+        );
+
+        featureGradient.addColorStop(
+            0.48,
+            "rgba(92,102,116," + f.a + ")"
+        );
+
+        featureGradient.addColorStop(
+            1.00,
+            "rgba(62,72,88,0)"
+        );
+
+        ctx.fillStyle = featureGradient;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // Лёгкая неровность края, чтобы диск не выглядел идеально плоским.
+    ctx.strokeStyle = "rgba(235,242,255,0.28)";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius - 2, 0, Math.PI * 2);
+    ctx.stroke();
+
+    var texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+
+    if (THREE.LinearFilter !== undefined) {
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+    }
+
+    return texture;
+}
+
+function createMoon() {
+    var material = new THREE.SpriteMaterial({
+        map: createMoonTexture(),
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+        depthTest: false
+    });
+
+    moon = new THREE.Sprite(material);
+    moon.scale.set(132, 132, 1);
+    moon.position.set(-800, 180, -1500);
+    moon.renderOrder = 10;
+    scene.add(moon);
+}
+
+
+function createSunriseGlowTexture() {
+    var canvas = document.createElement("canvas");
+    canvas.width = 512;
+    canvas.height = 512;
+
+    var ctx = canvas.getContext("2d");
+    var gradient = ctx.createRadialGradient(
+        256, 280, 8,
+        256, 280, 245
+    );
+
+    gradient.addColorStop(0.00, "rgba(255,248,210,0.92)");
+    gradient.addColorStop(0.14, "rgba(255,186,74,0.72)");
+    gradient.addColorStop(0.34, "rgba(255,112,34,0.34)");
+    gradient.addColorStop(0.68, "rgba(255,92,24,0.10)");
+    gradient.addColorStop(1.00, "rgba(255,90,20,0.0)");
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 512, 512);
+
+    var texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    return texture;
+}
+
+function createSunriseGlow() {
+    var material = new THREE.SpriteMaterial({
+        map: createSunriseGlowTexture(),
+        color: 0xffb15d,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+    });
+
+    sunriseGlow = new THREE.Sprite(material);
+    sunriseGlow.scale.set(330, 165, 1);
+    sunriseGlow.position.set(-360, 28, -760);
+    sunriseGlow.renderOrder = -2;
+
+    scene.add(sunriseGlow);
+}
+
+function createCloudTexture() {
+    var canvas = document.createElement("canvas");
+    canvas.width = 512;
+    canvas.height = 256;
+
+    var ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, 512, 256);
+
+    function cloudCircle(x, y, radius, alpha) {
+        var gradient = ctx.createRadialGradient(
+            x, y, radius * 0.15,
+            x, y, radius
+        );
+
+        gradient.addColorStop(0.0, "rgba(255,255,255," + alpha + ")");
+        gradient.addColorStop(0.55, "rgba(255,255,255," + (alpha * 0.72) + ")");
+        gradient.addColorStop(1.0, "rgba(255,255,255,0)");
+
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    cloudCircle(120, 150, 82, 0.92);
+    cloudCircle(190, 108, 100, 0.98);
+    cloudCircle(278, 126, 112, 0.96);
+    cloudCircle(360, 150, 88, 0.90);
+    cloudCircle(240, 170, 130, 0.82);
+
+    var texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    return texture;
+}
+
+function createClouds() {
+    var texture = createCloudTexture();
+
+    var cloudData = [
+        { x: -610, y: 185, z: -1150, sx: 330, sy: 120, speed: 2.2, opacity: 0.36 },
+        { x: -350, y: 240, z: -1500, sx: 420, sy: 150, speed: 1.4, opacity: 0.28 },
+        { x: -80,  y: 160, z: -1050, sx: 310, sy: 110, speed: 2.7, opacity: 0.34 },
+        { x: 240,  y: 215, z: -1380, sx: 390, sy: 138, speed: 1.8, opacity: 0.26 },
+        { x: 560,  y: 145, z: -1100, sx: 300, sy: 105, speed: 2.4, opacity: 0.32 },
+        { x: 820,  y: 255, z: -1650, sx: 470, sy: 165, speed: 1.1, opacity: 0.22 }
+    ];
+
+    for (var i = 0; i < cloudData.length; i++) {
+        var data = cloudData[i];
+
+        var material = new THREE.SpriteMaterial({
+            map: texture,
+            color: 0xffc38b,
+            transparent: true,
+            opacity: 0,
+            depthWrite: false
+        });
+
+        var cloud = new THREE.Sprite(material);
+        cloud.position.set(data.x, data.y, data.z);
+        cloud.scale.set(data.sx, data.sy, 1);
+
+        cloud.userData = {
+            speed: data.speed,
+            baseOpacity: data.opacity,
+            startX: data.x,
+            wrapWidth: 1700
+        };
+
+        clouds.push(cloud);
+        scene.add(cloud);
+    }
+}
+
+function updateClouds(delta, values) {
+    var dawnWarmth = Math.max(values.sunrise, values.sunset);
+    var cloudVisibility =
+        0.16 +
+        values.daylight * 0.70 +
+        dawnWarmth * 0.34 +
+        values.night * 0.05;
+
+    for (var i = 0; i < clouds.length; i++) {
+        var cloud = clouds[i];
+
+        cloud.position.x += cloud.userData.speed * delta;
+
+        if (cloud.position.x > 900) {
+            cloud.position.x = -900;
+        }
+
+        cloud.material.opacity =
+            cloud.userData.baseOpacity *
+            cloudVisibility;
+
+        var warmColor = new THREE.Color(0xffa96b);
+        var dayColor = new THREE.Color(0xf2f5f8);
+        var nightColor = new THREE.Color(0x53647f);
+
+        var color = dayColor.clone();
+        color.lerp(warmColor, dawnWarmth * 0.92);
+        color.lerp(nightColor, values.night * 0.85);
+
+        cloud.material.color.copy(color);
+    }
+}
+
+function loadFont() {
+    var loader = new THREE.FontLoader();
+
+    loader.load(
+        "fonts/" + fontName + "_" + fontWeight + ".typeface.json",
+        function (response) {
+            font = response;
+            refreshText();
+        },
+        undefined,
+        function (error) {
+            console.error("Не удалось загрузить шрифт:", error);
+        }
+    );
+}
+
+function refreshText() {
+    if (textMesh1) {
+        group.remove(textMesh1);
+        if (textMesh1.geometry) textMesh1.geometry.dispose();
+        textMesh1 = null;
+    }
+
+
+
+    if (!text) return;
+    createText();
+}
+
+function createText() {
+    textGeo = new THREE.TextGeometry(text, {
+        font: font,
+        size: size,
+        height: height,
+        curveSegments: 10,
+        bevelThickness: 0.28,
+        bevelSize: 0.18,
+        bevelEnabled: true,
+        bevelSegments: 6
+    });
+
+    textGeo.computeBoundingBox();
+    textGeo.computeVertexNormals();
+
+    var box = textGeo.boundingBox;
+    var textWidth = box.max.x - box.min.x;
+
+    textGeo = new THREE.BufferGeometry().fromGeometry(textGeo);
+
+    materials[0].envMap = cubeCamera.renderTarget.texture;
+    materials[1].envMap = cubeCamera.renderTarget.texture;
+    materials[0].needsUpdate = true;
+    materials[1].needsUpdate = true;
+
+    textMesh1 = new THREE.Mesh(textGeo, materials);
+    textMesh1.position.x = -textWidth / 2;
+    textMesh1.position.z = 0;
+    group.add(textMesh1);
+
+
+}
+
+function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+}
+
+function smoothstep(min, max, value) {
+    var x = clamp((value - min) / (max - min), 0, 1);
+    return x * x * (3 - 2 * x);
+}
+
+function mixColor(colorA, colorB, amount) {
+    return colorA.clone().lerp(colorB, amount);
+}
+
+function updateSunPosition(progress) {
+    var radius = parameters.distance;
+
+    // Солнце движется слева направо в видимой части кадра
+    var startX = -400;
+    var endX = 210;
+
+    var x =
+        startX +
+        (endX - startX) * progress;
+
+    // Дуга движения
+    var arc =
+        Math.sin(progress * Math.PI);
+
+    // В начале солнце находится у горизонта,
+    // затем поднимается и снова опускается
+    var y =
+        -8 +
+        arc * 250;
+
+    // Отрицательный Z помещает солнце перед камерой
+    var z =
+        -radius * 0.9;
+
+    sunLight.position.set(
+        x,
+        y,
+        z
+    );
+
+    sky.material.uniforms[
+        "sunPosition"
+        ].value.copy(
+        sunLight.position
+    );
+
+    water.material.uniforms[
+        "sunDirection"
+        ].value
+        .copy(
+            sunLight.position
+        )
+        .normalize();
+}
+
+function updateMoonPosition(progress) {
+    var horizontal = -850 + 1700 * progress;
+    var arc = Math.sin(progress * Math.PI);
+    var vertical = 100 + arc * 510;
+
+    moon.position.set(horizontal, vertical, -1200);
+    moonLight.position.copy(moon.position).normalize();
+}
+
+function getCycleValues() {
+    var dayPhase = clamp(timeOfDay / 0.5, 0, 1);
+    var nightPhase = clamp((timeOfDay - 0.5) / 0.5, 0, 1);
+
+    var daylight = 0;
+    if (timeOfDay < 0.5) {
+        daylight = smoothstep(0.00, 0.12, dayPhase) *
+            (1 - smoothstep(0.78, 1.00, dayPhase));
+    }
+
+    // Яркий, но короткий оранжевый восход у горизонта.
+    var sunrise = 1 - Math.abs(dayPhase - 0.075) / 0.13;
+    sunrise = clamp(sunrise, 0, 1) * (timeOfDay < 0.5 ? 1 : 0);
+
+    var sunset = 1 - Math.abs(dayPhase - 0.90) / 0.20;
+    sunset = clamp(sunset, 0, 1) * (timeOfDay < 0.5 ? 1 : 0);
+
+    var night;
+    if (timeOfDay >= 0.5) {
+        night = smoothstep(0.00, 0.18, nightPhase) *
+            (1 - smoothstep(0.80, 1.00, nightPhase));
+    } else {
+        night = 1 - smoothstep(0.00, 0.10, dayPhase);
+    }
+
+    return {
+        dayPhase: dayPhase,
+        nightPhase: nightPhase,
+        daylight: daylight,
+        sunrise: sunrise,
+        sunset: sunset,
+        night: night
+    };
+}
+
+function updateDayNightCycle(delta) {
+    timeOfDay += delta * dayNightSpeed;
+    if (timeOfDay >= 1) timeOfDay -= 1;
+
+    var values = getCycleValues();
+
+    if (timeOfDay < 0.5) {
+        updateSunPosition(values.dayPhase);
+    } else {
+        sunLight.position.set(0, -400, -300);
+        sky.material.uniforms["sunPosition"].value.copy(sunLight.position);
+        water.material.uniforms["sunDirection"].value
+            .copy(sunLight.position)
+            .normalize();
+    }
+
+    if (timeOfDay >= 0.5) {
+        updateMoonPosition(values.nightPhase);
+
+        if (water.material.uniforms["sunDirection"]) {
+            water.material.uniforms["sunDirection"].value
+                .copy(moon.position)
+                .normalize();
+        }
+    }
+
+    var moonFadeIn = smoothstep(0.02, 0.18, values.nightPhase);
+    var moonFadeOut = 1 - smoothstep(0.78, 0.98, values.nightPhase);
+    moon.material.opacity = values.night * moonFadeIn * moonFadeOut;
+    stars.material.opacity = values.night * 0.92;
+
+    var warmAmount = Math.max(values.sunrise, values.sunset);
+    var uniforms = sky.material.uniforms;
+
+    // Более тёплая атмосфера у горизонта, без огромного оранжевого пятна.
+    uniforms["turbidity"].value =
+        10 + values.sunrise * 2.6 + values.sunset * 1.8 - values.night * 7;
+
+    uniforms["rayleigh"].value =
+        2 - values.sunrise * 0.55 - values.sunset * 0.35 - values.night * 1.78;
+
+    uniforms["mieCoefficient"].value =
+        0.008 + values.sunrise * 0.009 + values.sunset * 0.006 - values.night * 0.006;
+
+    uniforms["mieDirectionalG"].value =
+        0.8 + warmAmount * 0.045 - values.night * 0.25;
+
+    if (uniforms["luminance"]) {
+        uniforms["luminance"].value = 1 - values.night * 0.80;
+    }
+
+    // Вода остаётся синей, но на рассвете получает тёплый оттенок.
+    var sunriseWaterColor = new THREE.Color(0x1b1020);
+    var waterColor = mixColor(dayWaterColor, sunriseWaterColor, values.sunrise * 0.42);
+    waterColor.lerp(sunsetWaterColor, values.sunset * 0.75);
+    waterColor.lerp(nightWaterColor, values.night);
+
+    if (water.material.uniforms["waterColor"]) {
+        water.material.uniforms["waterColor"].value.copy(waterColor);
+    }
+
+    // Цвет блика на воде: золотой на рассвете, белый днём.
+    if (water.material.uniforms["sunColor"]) {
+        var waterSunColor = new THREE.Color(0xffffff);
+
+        waterSunColor.lerp(
+            new THREE.Color(0xff9a3c),
+            values.sunrise * 0.92
+        );
+
+        waterSunColor.lerp(
+            new THREE.Color(0xffb05a),
+            values.sunset * 0.72
+        );
+
+        waterSunColor.lerp(
+            new THREE.Color(0x9eb9e8),
+            values.night * 0.88
+        );
+
+        water.material.uniforms["sunColor"].value.copy(waterSunColor);
+    }
+
+    sunLight.intensity =
+        0.14 +
+        values.daylight * 0.92 +
+        values.sunrise * 0.72 +
+        values.sunset * 0.45;
+
+    var sunColor = new THREE.Color(0xfff4d6);
+    sunColor.lerp(new THREE.Color(0xff761f), values.sunrise * 0.92);
+    sunColor.lerp(new THREE.Color(0xff8d3d), values.sunset * 0.82);
+    sunLight.color.copy(sunColor);
+
+    moonLight.intensity = values.night * 0.48;
+
+    hemisphereLight.intensity =
+        0.16 +
+        values.daylight * 0.48 +
+        values.sunrise * 0.10 +
+        values.night * 0.16;
+
+    textLight.intensity =
+        0.55 +
+        values.daylight * 0.85 +
+        values.sunrise * 0.75 +
+        values.sunset * 0.55 +
+        values.night * 0.28;
+
+    var textLightColor = new THREE.Color(0xffd58a);
+    textLightColor.lerp(new THREE.Color(0xff9b45), values.sunrise * 0.90);
+    textLightColor.lerp(new THREE.Color(0xffa55f), values.sunset * 0.80);
+    textLightColor.lerp(new THREE.Color(0x9ab8ff), values.night);
+    textLight.color.copy(textLightColor);
+
+    materials[0].color.copy(
+        mixColor(dayTextFront, nightTextFront, values.night)
+    );
+
+    materials[1].color.copy(
+        mixColor(dayTextSide, nightTextSide, values.night)
+    );
+
+    textFrontLight.intensity =
+        0.72 + values.sunrise * 0.24 + values.night * 0.30;
+
+    textRimLight.intensity =
+        0.42 + values.sunrise * 0.16 + values.night * 0.58;
+
+    textSunLight.intensity =
+        values.sunrise * 3.0 +
+        values.sunset * 2.0;
+
+    textSunLight.color.setHex(
+        values.sunrise > values.sunset
+            ? 0xff8a32
+            : 0xffa050
+    );
+
+    textSunLight.position.set(
+        sunLight.position.x * 0.30,
+        Math.max(20, sunLight.position.y * 0.24),
+        80
+    );
+
+    // Маленький естественный ореол вокруг самого солнца.
+    if (sunriseGlow) {
+        sunriseGlow.position.x = sunLight.position.x * 0.94;
+        sunriseGlow.position.y = Math.max(6, sunLight.position.y * 0.30 + 18);
+
+        sunriseGlow.material.opacity =
+            values.sunrise * 0.42 +
+            values.sunset * 0.20;
+
+        sunriseGlow.material.color.setHex(
+            values.sunrise >= values.sunset
+                ? 0xff9a42
+                : 0xff7840
+        );
+    }
+
+    updateClouds(delta, values);
+    stars.rotation.y += delta * 0.003;
+}
+
+function onDocumentMouseMove(event) {
+    mouseX = (event.clientX - windowHalfX) * 0.025;
+    mouseY = (event.clientY - windowHalfY) * 0.012;
+}
+
+function onDocumentTouchStart(event) {
+    if (event.touches.length !== 1) return;
+    updateTouchPosition(event.touches[0]);
+}
+
+function onDocumentTouchMove(event) {
+    if (event.touches.length !== 1) return;
+    updateTouchPosition(event.touches[0]);
+}
+
+function updateTouchPosition(touch) {
+    mouseX = (touch.pageX - windowHalfX) * 0.025;
+    mouseY = (touch.pageY - windowHalfY) * 0.012;
+}
+
+function onWindowResize() {
+    windowHalfX = window.innerWidth / 2;
+    windowHalfY = window.innerHeight / 2;
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    var maxPixelRatio = window.innerWidth < 768 ? 1.2 : 1.5;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+
+function updateTextEnvironment(delta) {
+    if (!cubeCamera || !textMesh1) return;
+
+    cubeUpdateTimer += delta;
+
+    if (cubeUpdateTimer < cubeUpdateInterval) {
+        return;
+    }
+
+    cubeUpdateTimer = 0;
+
+    var worldPosition = new THREE.Vector3();
+    textMesh1.getWorldPosition(worldPosition);
+
+    cubeCamera.position.copy(worldPosition);
+
+    textMesh1.visible = false;
+
+    var waterWasVisible = water.visible;
+    water.visible = false;
+
+    cubeCamera.update(renderer, scene);
+
+    water.visible = waterWasVisible;
+    textMesh1.visible = true;
+
+}
+
+function animate(now) {
+    requestAnimationFrame(animate);
+    render(now);
+}
+
+function render(now) {
+    var delta = Math.min((now - previousTime) / 1000, 0.05);
+    previousTime = now;
+    var time = now * 0.001;
+
+
+    updateDayNightCycle(delta);
+
+    var targetCameraX = cameraBaseX + Math.max(-8, Math.min(8, mouseX));
+    var targetCameraY = cameraBaseY - Math.max(-2.5, Math.min(2.5, mouseY));
+
+    camera.position.x += (targetCameraX - camera.position.x) * 0.018;
+    camera.position.y += (targetCameraY - camera.position.y) * 0.012;
+    camera.lookAt(0, 0, 0);
+
+    updateFloatingPhysics(delta, time);
+    updateTextEnvironment(delta);
+
+    var glintProgress =
+        (Math.sin(time * 0.22) + 1) * 0.5;
+
+    textGlintLight.position.x =
+        -75 + glintProgress * 150;
+
+    textGlintLight.position.y =
+        8 + Math.sin(time * 0.17) * 3;
+
+    textGlintLight.intensity =
+        0.35 + Math.sin(time * 0.22) * 0.18;
+
+    water.material.uniforms["time"].value += delta * 0.58;
+    renderer.render(scene, camera);
+}
+
+function getOceanHeight(x, z, time) {
+    var height = 0;
+
+    // Длинная основная волна
+    height += Math.sin(
+        x * 0.025 +
+        z * 0.014 +
+        time * 0.72
+    ) * 0.16;
+
+    // Волна, идущая под другим углом
+    height += Math.sin(
+        x * -0.018 +
+        z * 0.038 +
+        time * 0.94 +
+        1.7
+    ) * 0.05;
+
+    // Более короткая рябь
+    height += Math.sin(
+        x * 0.065 +
+        z * -0.025 +
+        time * 1.35 +
+        3.1
+    ) * 0.05;
+
+    // Медленная тяжёлая волна
+    height += Math.sin(
+        x * 0.010 +
+        z * 0.012 +
+        time * 0.38 +
+        0.8
+    ) * 0.12;
+
+    return height;
+}
+
+function updateFloatingPhysics(delta, time) {
+    if (!textMesh1) return;
+
+    // Не даём физике резко прыгнуть после сворачивания вкладки.
+    delta = Math.min(delta, 0.033);
+
+    var halfWidth = floatingWidth * 0.5;
+    var halfDepth = floatingDepth * 0.5;
+
+    // Четыре точки плавучести вокруг надписи.
+    var leftHeight = getOceanHeight(-halfWidth, 0, time);
+    var rightHeight = getOceanHeight(halfWidth, 0, time);
+    var frontHeight = getOceanHeight(0, halfDepth, time);
+    var backHeight = getOceanHeight(0, -halfDepth, time);
+    var centerHeight = getOceanHeight(0, 0, time);
+
+    var averageHeight = (
+        leftHeight +
+        rightHeight +
+        frontHeight +
+        backHeight +
+        centerHeight * 2
+    ) / 6;
+
+    var targetY = floatingPhysics.baseY + averageHeight;
+
+    // Крен и продольный наклон соответствуют разнице высот волн.
+    var targetRoll = Math.atan2(
+        leftHeight - rightHeight,
+        floatingWidth
+    ) * 1.5;
+
+    var targetPitch = Math.atan2(
+        backHeight - frontHeight,
+        floatingDepth
+    ) * 0.45;
+
+    // Вертикальная пружина + демпфирование.
+    var verticalForce =
+        (targetY - floatingPhysics.y) *
+        floatingPhysics.buoyancy;
+
+    verticalForce -=
+        floatingPhysics.velocityY *
+        floatingPhysics.verticalDamping;
+
+    var verticalAcceleration =
+        verticalForce / floatingPhysics.mass;
+
+    floatingPhysics.velocityY +=
+        verticalAcceleration * delta;
+
+    floatingPhysics.y +=
+        floatingPhysics.velocityY * delta;
+
+    // Продольный наклон.
+    var pitchAcceleration =
+        (targetPitch - floatingPhysics.pitch) *
+        floatingPhysics.angularSpring;
+
+    pitchAcceleration -=
+        floatingPhysics.pitchVelocity *
+        floatingPhysics.angularDamping;
+
+    floatingPhysics.pitchVelocity +=
+        pitchAcceleration * delta;
+
+    floatingPhysics.pitch +=
+        floatingPhysics.pitchVelocity * delta;
+
+    // Боковой крен.
+    var rollAcceleration =
+        (targetRoll - floatingPhysics.roll) *
+        floatingPhysics.angularSpring;
+
+    rollAcceleration -=
+        floatingPhysics.rollVelocity *
+        floatingPhysics.angularDamping;
+
+    floatingPhysics.rollVelocity +=
+        rollAcceleration * delta;
+
+    floatingPhysics.roll +=
+        floatingPhysics.rollVelocity * delta;
+
+    // Очень слабое вращение по курсу с инерцией.
+    var targetYaw =
+        Math.sin(time * 0.19) * 0.005 +
+        Math.sin(time * 0.41 + 1.2) * 0.002;
+
+    var yawAcceleration =
+        (targetYaw - floatingPhysics.yaw) * 2.0 -
+        floatingPhysics.yawVelocity * 2.2;
+
+    floatingPhysics.yawVelocity +=
+        yawAcceleration * delta;
+
+    floatingPhysics.yaw +=
+        floatingPhysics.yawVelocity * delta;
+
+    textMesh1.position.y = floatingPhysics.y;
+    // Добавляем лёгкое остаточное покачивание, как у тяжёлого
+    // плавающего объекта, даже когда волны почти ровные.
+    var idlePitch = Math.sin(time * 0.55) * 0.010;
+    var idleRoll  = Math.sin(time * 0.42 + 1.4) * 0.014;
+
+    textMesh1.rotation.x = floatingPhysics.pitch + idlePitch;
+    textMesh1.rotation.z = floatingPhysics.roll + idleRoll;
+    textMesh1.rotation.y = floatingPhysics.yaw;
+
+}
+
+
+</script>
+</body>
+</html>
