@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Website Under Maintenance</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #ffffff;
+            background:
+                    radial-gradient(circle at top left, #1d4ed8, transparent 40%),
+                    radial-gradient(circle at bottom right, #7c3aed, transparent 40%),
+                    #090d1a;
+        }
+
+        .maintenance {
+            width: 100%;
+            max-width: 680px;
+            padding: 60px 40px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.07);
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(16px);
+        }
+
+        .icon {
+            width: 76px;
+            height: 76px;
+            display: grid;
+            place-items: center;
+            margin: 0 auto 28px;
+            font-size: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: pulse 2s infinite;
+        }
+
+        h1 {
+            margin-bottom: 18px;
+            font-size: clamp(34px, 7vw, 58px);
+            line-height: 1.05;
+        }
+
+        p {
+            max-width: 500px;
+            margin: 0 auto;
+            color: rgba(255, 255, 255, 0.72);
+            font-size: 18px;
+            line-height: 1.7;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 32px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+        }
+
+        .status-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #4ade80;
+            box-shadow: 0 0 12px #4ade80;
+        }
+
+        @keyframes pulse {
+            50% {
+                transform: scale(1.08);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .maintenance {
+                padding: 45px 24px;
+            }
+
+            p {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<main class="maintenance">
+    <div class="icon">⚙️</div>
+
+    <h1>Website Under Maintenance</h1>
+
+    <p>
+        We are currently working on improving our website.
+        We will be back online soon. Thank you for your patience.
+    </p>
+
+    <div class="status">
+        <span class="status-dot"></span>
+        Maintenance in progress
+    </div>
+</main>
+</body>
+</html>

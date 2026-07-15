@@ -56,7 +56,8 @@ const translations = {
       budget: 'Орієнтовний бюджет', budgetPlaceholder: 'Оберіть діапазон',
       budgetOptions: ['До $2,000', '$2,000–$5,000', '$5,000–$10,000', 'Понад $10,000', 'Потрібна оцінка'],
       message: 'Коротко опишіть завдання',
-      submit: 'Надіслати запит', sending: 'Підготовка листа…', sent: 'Поштовий клієнт відкрито',
+      submit: 'Надіслати запит', sending: 'Надсилання…', sent: 'Повідомлення надіслано',
+      error: 'Не вдалося надіслати. Спробуйте ще раз.',
       privacy: 'Натискаючи кнопку, ви погоджуєтесь на обробку даних для відповіді на запит.',
     },
   },
@@ -90,7 +91,8 @@ const translations = {
       budget: 'Estimated budget', budgetPlaceholder: 'Choose a range',
       budgetOptions: ['Up to $2,000', '$2,000–$5,000', '$5,000–$10,000', 'Over $10,000', 'Need an estimate'],
       message: 'Briefly describe your project',
-      submit: 'Send request', sending: 'Preparing email…', sent: 'Email client opened',
+      submit: 'Send request', sending: 'Sending…', sent: 'Message sent',
+      error: 'Unable to send. Please try again.',
       privacy: 'By submitting, you agree that your details may be used to reply to this request.',
     },
   },
@@ -113,33 +115,147 @@ function setLocale(value) {
   locale.value = value
 }
 
+function onContactLeave(element, done) {
+  if (!element) {
+    done()
+    return
+  }
 
-function submitContactForm() {
+  gsap.killTweensOf(element)
+
+  gsap.to(element, {
+    opacity: 0,
+    scale: 0.97,
+    y: -20,
+    duration: 0.28,
+    ease: 'power2.in',
+    overwrite: true,
+    onComplete: done,
+  })
+}
+
+function onContactEnter(element, done) {
+  if (!element) {
+    done()
+    return
+  }
+
+  const circle = element.querySelector('.success-circle')
+  const check = element.querySelector('.success-check')
+  const contentElements = element.querySelectorAll(
+    '.success-eyebrow, .contact-success h3, .success-text, .success-info, .success-button',
+  )
+
+  gsap.killTweensOf(element)
+
+  gsap.set(element, {
+    opacity: 0,
+    scale: 0.97,
+    y: 30,
+  })
+
+  if (circle) {
+    gsap.set(circle, {
+      strokeDasharray: 160,
+      strokeDashoffset: 160,
+    })
+  }
+
+  if (check) {
+    gsap.set(check, {
+      strokeDasharray: 50,
+      strokeDashoffset: 50,
+    })
+  }
+
+  if (contentElements.length) {
+    gsap.set(contentElements, {
+      opacity: 0,
+      y: 16,
+    })
+  }
+
+  const timeline = gsap.timeline({ onComplete: done })
+
+  timeline.to(element, {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    duration: 0.45,
+    ease: 'power3.out',
+  })
+
+  if (circle) {
+    timeline.to(circle, {
+      strokeDashoffset: 0,
+      duration: 0.55,
+      ease: 'power2.out',
+    }, '-=0.25')
+  }
+
+  if (check) {
+    timeline.to(check, {
+      strokeDashoffset: 0,
+      duration: 0.35,
+      ease: 'power2.out',
+    }, '-=0.15')
+  }
+
+  if (contentElements.length) {
+    timeline.to(contentElements, {
+      opacity: 1,
+      y: 0,
+      duration: 0.35,
+      stagger: 0.07,
+      ease: 'power2.out',
+    }, '-=0.2')
+  }
+}
+
+const resetContactForm = () => {
+  contactForm.value = {
+    name: '',
+    email: '',
+    company: '',
+    projectType: '',
+    budget: '',
+    message: '',
+  }
+
+  formStatus.value = 'idle'
+}
+
+async function submitContactForm() {
   formStatus.value = 'sending'
 
-  const f = contactForm.value
-  const subject = locale.value === 'uk'
-    ? `Запит щодо проєкту від ${f.name}`
-    : `Project inquiry from ${f.name}`
+  try {
+    const response = await fetch(
+        'https://rff28ijdx7.execute-api.eu-central-1.amazonaws.com/contact',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...contactForm.value,
+            language: locale.value,
+            page: window.location.pathname,
+            userAgent: navigator.userAgent,
+          }),
+        },
+    )
 
-  const labels = locale.value === 'uk'
-    ? { name: 'Ім’я', email: 'Email', company: 'Компанія', type: 'Тип проєкту', budget: 'Бюджет', message: 'Опис' }
-    : { name: 'Name', email: 'Email', company: 'Company', type: 'Project type', budget: 'Budget', message: 'Message' }
+    const result = await response.json()
 
-  const body = [
-    `${labels.name}: ${f.name}`,
-    `${labels.email}: ${f.email}`,
-    `${labels.company}: ${f.company || '—'}`,
-    `${labels.type}: ${f.projectType}`,
-    `${labels.budget}: ${f.budget}`,
-    '',
-    `${labels.message}:`,
-    f.message,
-  ].join('\n')
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || 'Unable to send request')
+    }
 
-  window.location.href = `mailto:hello@example.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-  formStatus.value = 'sent'
-  window.setTimeout(() => { formStatus.value = 'idle' }, 3000)
+    formStatus.value = 'sent'
+  } catch (error) {
+    console.error(error)
+    formStatus.value = 'error'
+  }
 }
 
 function scrollToSection(id) {
@@ -299,24 +415,230 @@ onBeforeUnmount(() => {
             <a class="contact-link" href="mailto:hello@example.com">hello@example.com <span>↗</span></a>
           </div>
 
-          <form class="contact-form" @submit.prevent="submitContactForm">
-            <h3>{{ t.contact.formTitle }}</h3>
-            <div class="form-grid">
-              <label><span>{{ t.contact.name }}</span><input v-model.trim="contactForm.name" type="text" autocomplete="name" required></label>
-              <label><span>{{ t.contact.email }}</span><input v-model.trim="contactForm.email" type="email" autocomplete="email" required></label>
-              <label class="form-wide"><span>{{ t.contact.company }}</span><input v-model.trim="contactForm.company" type="text" autocomplete="organization"></label>
-              <label><span>{{ t.contact.projectType }}</span><select v-model="contactForm.projectType" required><option value="" disabled>{{ t.contact.projectPlaceholder }}</option><option v-for="option in t.contact.projectOptions" :key="option" :value="option">{{ option }}</option></select></label>
-              <label><span>{{ t.contact.budget }}</span><select v-model="contactForm.budget" required><option value="" disabled>{{ t.contact.budgetPlaceholder }}</option><option v-for="option in t.contact.budgetOptions" :key="option" :value="option">{{ option }}</option></select></label>
-              <label class="form-wide"><span>{{ t.contact.message }}</span><textarea v-model.trim="contactForm.message" rows="5" required></textarea></label>
+          <Transition
+              mode="out-in"
+              :css="false"
+              @leave="onContactLeave"
+              @enter="onContactEnter"
+          >
+            <form
+                v-if="formStatus !== 'sent'"
+                key="contact-form"
+                class="contact-form"
+                @submit.prevent="submitContactForm"
+            >
+              <h3>{{ t.contact.formTitle }}</h3>
+
+              <div class="form-grid">
+                <label>
+                  <span>{{ t.contact.name }}</span>
+
+                  <input
+                      v-model.trim="contactForm.name"
+                      type="text"
+                      autocomplete="name"
+                      required
+                  >
+                </label>
+
+                <label>
+                  <span>{{ t.contact.email }}</span>
+
+                  <input
+                      v-model.trim="contactForm.email"
+                      type="email"
+                      autocomplete="email"
+                      required
+                  >
+                </label>
+
+                <label class="form-wide">
+                  <span>{{ t.contact.company }}</span>
+
+                  <input
+                      v-model.trim="contactForm.company"
+                      type="text"
+                      autocomplete="organization"
+                  >
+                </label>
+
+                <label>
+                  <span>{{ t.contact.projectType }}</span>
+
+                  <select
+                      v-model="contactForm.projectType"
+                      required
+                  >
+                    <option
+                        value=""
+                        disabled
+                    >
+                      {{ t.contact.projectPlaceholder }}
+                    </option>
+
+                    <option
+                        v-for="option in t.contact.projectOptions"
+                        :key="option"
+                        :value="option"
+                    >
+                      {{ option }}
+                    </option>
+                  </select>
+                </label>
+
+                <label>
+                  <span>{{ t.contact.budget }}</span>
+
+                  <select
+                      v-model="contactForm.budget"
+                      required
+                  >
+                    <option
+                        value=""
+                        disabled
+                    >
+                      {{ t.contact.budgetPlaceholder }}
+                    </option>
+
+                    <option
+                        v-for="option in t.contact.budgetOptions"
+                        :key="option"
+                        :value="option"
+                    >
+                      {{ option }}
+                    </option>
+                  </select>
+                </label>
+
+                <label class="form-wide">
+                  <span>{{ t.contact.message }}</span>
+
+                  <textarea
+                      v-model.trim="contactForm.message"
+                      rows="5"
+                      required
+                  ></textarea>
+                </label>
+              </div>
+
+              <button
+                  class="form-submit"
+                  type="submit"
+                  :disabled="formStatus === 'sending'"
+              >
+                {{
+                  formStatus === 'sending'
+                      ? t.contact.sending
+                      : t.contact.submit
+                }}
+
+                <span>↗</span>
+              </button>
+
+              <p v-if="formStatus === 'error'" class="form-error">
+                {{ t.contact.error }}
+              </p>
+
+              <p class="form-privacy">
+                {{ t.contact.privacy }}
+              </p>
+            </form>
+
+            <div
+                v-else
+                key="contact-success"
+                class="contact-success"
+            >
+              <div class="success-icon">
+                <svg
+                    viewBox="0 0 52 52"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle
+                      cx="26"
+                      cy="26"
+                      r="25"
+                      class="success-circle"
+                  />
+
+                  <path
+                      d="M15 27L23 35L38 18"
+                      class="success-check"
+                  />
+                </svg>
+              </div>
+
+              <p class="success-eyebrow">
+                {{
+                  locale === 'uk'
+                      ? 'ПОВІДОМЛЕННЯ НАДІСЛАНО'
+                      : 'MESSAGE SENT'
+                }}
+              </p>
+
+              <h3>
+                {{
+                  locale === 'uk'
+                      ? 'Дякую за звернення!'
+                      : 'Thank you!'
+                }}
+              </h3>
+
+              <p class="success-text">
+                {{
+                  locale === 'uk'
+                      ? 'Ваш запит успішно отримано. Я зв’яжуся з вами найближчим часом.'
+                      : 'Your request has been received successfully. I will get back to you as soon as possible.'
+                }}
+              </p>
+
+              <div class="success-info">
+                <strong>
+                  {{
+                    locale === 'uk'
+                        ? 'Зазвичай відповідаю'
+                        : 'Typical response'
+                  }}
+                </strong>
+
+                <span>
+                  {{
+                    locale === 'uk'
+                        ? 'протягом одного робочого дня'
+                        : 'within one business day'
+                  }}
+                </span>
+              </div>
+
+              <button
+                  class="form-submit success-button"
+                  type="button"
+                  @click="resetContactForm"
+              >
+                {{
+                  locale === 'uk'
+                      ? 'Надіслати ще один запит'
+                      : 'Send another request'
+                }}
+
+                <span>↗</span>
+              </button>
             </div>
-            <button class="form-submit" type="submit" :disabled="formStatus === 'sending'">
-              {{ formStatus === 'sending' ? t.contact.sending : formStatus === 'sent' ? t.contact.sent : t.contact.submit }} <span>↗</span>
-            </button>
-            <p class="form-privacy">{{ t.contact.privacy }}</p>
-          </form>
+          </Transition>
         </div>
         <footer><span>© {{ new Date().getFullYear() }} Vitaliy Z.</span><span>Laravel · Vue · AWS</span></footer>
       </div></div></section>
     </main>
   </div>
 </template>
+<style scoped>
+.contact-success {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+</style>
