@@ -3,9 +3,13 @@ import { computed, nextTick, ref, watch } from 'vue'
 import SiteHeader from './components/SiteHeader.vue'
 import ThreeBackground from './components/ThreeBackground.vue'
 import ProjectCard from './components/ProjectCard.vue'
+import TurnstileWidget from './components/TurnstileWidget.vue'
 
 
 const formStatus = ref('idle')
+const turnstileToken = ref('')
+const turnstileWidget = ref(null)
+const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY
 const activeStackIndex = ref(null)
 const contactForm = ref({
   name: '',
@@ -34,11 +38,10 @@ const translations = {
     about: {
       number: '01 / ПРО WEBREMOTE',
       title: 'Інженерний підхід до вебпродуктів — від ідеї до стабільного запуску.',
-      large: 'WebRemote — software engineering studio, заснована та очолювана Vitaliy Z. Ми створюємо нові продукти, API та інтеграції, а також модернізуємо складні legacy-системи.',
+      large: 'WebRemote — software engineering studio. Ми створюємо сучасні вебпродукти, REST API, інтеграції та модернізуємо складні legacy-системи.',
       text: 'Кожен проєкт отримує пряме технічне лідерство, прозору комунікацію та фокус на бізнес-результаті. За потреби до роботи підключаються перевірені спеціалісти, а відповідальність за архітектуру та якість залишається в WebRemote.',
       years: 'років інженерного досвіду', earned: 'зароблено на Upwork', hours: 'годин клієнтської розробки',
-      founder: 'Засновник і Lead Developer — Vitaliy Z.',
-    },
+          },
     stack: { number: '02 / ЕКСПЕРТИЗА', title: 'Від архітектури та API', accent: 'до інтерфейсу й хмари.' },
     projects: { number: '03 / ВИБРАНІ РОБОТИ', title: 'Продукти та системи', eyebrow: 'Проєкт WebRemote', open: 'Детальніше' },
     contact: {
@@ -53,6 +56,8 @@ const translations = {
       message: 'Коротко опишіть задачу',
       submit: 'Надіслати запит', sending: 'Надсилання…', sent: 'Повідомлення надіслано',
       error: 'Не вдалося надіслати. Спробуйте ще раз.',
+      verificationRequired: 'Підтвердьте, що ви не робот.',
+      verificationError: 'Не вдалося виконати перевірку. Оновіть її та спробуйте ще раз.',
       privacy: 'Натискаючи кнопку, ви погоджуєтесь на обробку даних для відповіді на запит.',
     },
   },
@@ -70,11 +75,10 @@ const translations = {
     about: {
       number: '01 / ABOUT WEBREMOTE',
       title: 'An engineering approach to web products — from idea to reliable launch.',
-      large: 'WebRemote is a software engineering studio founded and led by Vitaliy Z. We build new products, APIs and integrations, and modernize complex legacy systems.',
+      large: 'WebRemote is a software engineering studio. We build modern web products, REST APIs, integrations and modernize complex legacy systems.',
       text: 'Every engagement receives direct technical leadership, transparent communication and a strong focus on business outcomes. Trusted specialists join when needed, while WebRemote remains accountable for architecture and quality.',
       years: 'years of engineering experience', earned: 'earned on Upwork', hours: 'hours of client development',
-      founder: 'Founder & Lead Developer — Vitaliy Z.',
-    },
+          },
     stack: { number: '02 / EXPERTISE', title: 'From architecture and APIs', accent: 'to interfaces and cloud.' },
     projects: { number: '03 / SELECTED WORK', title: 'Products and systems', eyebrow: 'WebRemote project', open: 'View details' },
     contact: {
@@ -89,6 +93,8 @@ const translations = {
       message: 'Briefly describe your challenge',
       submit: 'Send inquiry', sending: 'Sending…', sent: 'Message sent',
       error: 'Unable to send. Please try again.',
+      verificationRequired: 'Please complete the security verification.',
+      verificationError: 'Security verification failed. Refresh it and try again.',
       privacy: 'By submitting, you agree that your details may be used to reply to this request.',
     },
   },
@@ -175,10 +181,17 @@ const resetContactForm = () => {
     message: '',
   }
 
+  turnstileToken.value = ''
   formStatus.value = 'idle'
+  nextTick(() => turnstileWidget.value?.reset())
 }
 
 async function submitContactForm() {
+  if (!turnstileToken.value) {
+    formStatus.value = 'verification-required'
+    return
+  }
+
   formStatus.value = 'sending'
 
   try {
@@ -194,6 +207,7 @@ async function submitContactForm() {
             language: locale.value,
             page: window.location.pathname,
             userAgent: navigator.userAgent,
+            turnstileToken: turnstileToken.value,
           }),
         },
     )
@@ -207,8 +221,27 @@ async function submitContactForm() {
     formStatus.value = 'sent'
   } catch (error) {
     console.error(error)
+    turnstileToken.value = ''
+    turnstileWidget.value?.reset()
     formStatus.value = 'error'
   }
+}
+
+function handleTurnstileVerified(token) {
+  turnstileToken.value = token
+
+  if (formStatus.value === 'verification-required' || formStatus.value === 'verification-error') {
+    formStatus.value = 'idle'
+  }
+}
+
+function handleTurnstileExpired() {
+  turnstileToken.value = ''
+}
+
+function handleTurnstileError() {
+  turnstileToken.value = ''
+  formStatus.value = 'verification-error'
 }
 
 function scrollToSection(id) {
@@ -271,7 +304,8 @@ watch(locale, async (value) => {
 
       <section id="about" class="panel light-panel about-panel"><div class="panel-surface"><div class="panel-inner page-width section-grid">
         <div><p class="section-number">{{ t.about.number }}</p><h2>{{ t.about.title }}</h2></div>
-        <div class="about-copy"><p class="large-copy">{{ t.about.large }}</p><p>{{ t.about.text }}</p><p class="founder-line">{{ t.about.founder }}</p><div class="stats">
+        <div class="about-copy"><p class="large-copy">{{ t.about.large }}</p><p>{{ t.about.text }}</p>
+          <div class="stats">
           <div><strong>10+</strong><span>{{ t.about.years }}</span></div><div><strong>60K+</strong><span>{{ t.about.earned }}</span></div><div><strong>5K</strong><span>{{ t.about.hours }}</span></div>
         </div></div>
       </div></div></section>
@@ -427,10 +461,25 @@ watch(locale, async (value) => {
                 </label>
               </div>
 
+              <TurnstileWidget
+                  v-if="turnstileSiteKey"
+                  ref="turnstileWidget"
+                  class="form-wide"
+                  :site-key="turnstileSiteKey"
+                  :language="locale"
+                  @verified="handleTurnstileVerified"
+                  @expired="handleTurnstileExpired"
+                  @error="handleTurnstileError"
+              />
+
+              <p v-else class="form-error form-wide">
+                VITE_TURNSTILE_SITE_KEY is not configured.
+              </p>
+
               <button
                   class="form-submit"
                   type="submit"
-                  :disabled="formStatus === 'sending'"
+                  :disabled="formStatus === 'sending' || !turnstileSiteKey"
               >
                 {{
                   formStatus === 'sending'
@@ -443,6 +492,14 @@ watch(locale, async (value) => {
 
               <p v-if="formStatus === 'error'" class="form-error">
                 {{ t.contact.error }}
+              </p>
+
+              <p v-else-if="formStatus === 'verification-required'" class="form-error">
+                {{ t.contact.verificationRequired }}
+              </p>
+
+              <p v-else-if="formStatus === 'verification-error'" class="form-error">
+                {{ t.contact.verificationError }}
               </p>
 
               <p class="form-privacy">
@@ -533,7 +590,7 @@ watch(locale, async (value) => {
             </div>
           </Transition>
         </div>
-        <footer><span>© {{ new Date().getFullYear() }} WebRemote</span><span>Founded by Vitaliy Z. · Laravel · Vue · AWS</span></footer>
+        <footer><span>© {{ new Date().getFullYear() }} WebRemote</span><span>Laravel · Node.js · Vue.js · AWS</span></footer>
       </div></div></section>
     </main>
   </div>

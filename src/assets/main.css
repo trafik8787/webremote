@@ -1680,3 +1680,21 @@ button {
         display: none;
     }
 }
+
+.turnstile-widget {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 65px;
+    margin-top: 2px;
+    overflow: hidden;
+}
+
+.turnstile-widget iframe {
+    max-width: 100%;
+}
+
+@media (max-width: 620px) {
+    .turnstile-widget {
+        grid-column: auto;
+    }
+}
