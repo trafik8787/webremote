@@ -1,50 +1,95 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 
 const props = defineProps({
-  locale: { type: String, required: true },
-  labels: { type: Object, required: true },
+  locale: {
+    type: String,
+    required: true,
+  },
+  labels: {
+    type: Object,
+    required: true,
+  },
 })
+
 const emit = defineEmits(['navigate', 'change-locale'])
-const open = ref(false)
+const menuOpen = ref(false)
 
-const links = computed(() => [
-  { id: 'home', label: props.labels.home },
-  { id: 'about', label: props.labels.about },
-  { id: 'stack', label: props.labels.stack },
-  { id: 'projects', label: props.labels.projects },
-  { id: 'contact', label: props.labels.contact },
-])
+const items = [
+  { id: 'home', key: 'home' },
+  { id: 'about', key: 'about' },
+  { id: 'stack', key: 'stack' },
+  { id: 'projects', key: 'projects' },
+  { id: 'contact', key: 'contact' },
+]
 
-function goTo(id) {
-  open.value = false
+function navigate(id) {
+  menuOpen.value = false
   emit('navigate', id)
+}
+
+function changeLocale(value) {
+  emit('change-locale', value)
 }
 </script>
 
 <template>
   <header class="site-header">
-    <button class="brand" type="button" @click="goTo('home')" :aria-label="labels.home">
-      <span class="brand-mark">VZ</span><span class="brand-text">Vitaliy Z.</span>
+    <button class="brand" type="button" aria-label="WebRemote home" @click="navigate('home')">
+      <span class="brand-mark">WR</span>
+      <span class="brand-text">WebRemote</span>
     </button>
+
+    <nav class="desktop-nav" aria-label="Main navigation">
+      <button
+        v-for="item in items"
+        :key="item.id"
+        type="button"
+        @click="navigate(item.id)"
+      >
+        {{ labels[item.key] }}
+      </button>
+    </nav>
 
     <div class="header-actions">
       <div class="language-switcher" aria-label="Language switcher">
-        <button type="button" :class="{ active: locale === 'uk' }" @click="emit('change-locale', 'uk')">UA</button>
+        <button
+          type="button"
+          :class="{ active: props.locale === 'uk' }"
+          @click="changeLocale('uk')"
+        >UA</button>
         <span>/</span>
-        <button type="button" :class="{ active: locale === 'en' }" @click="emit('change-locale', 'en')">EN</button>
+        <button
+          type="button"
+          :class="{ active: props.locale === 'en' }"
+          @click="changeLocale('en')"
+        >EN</button>
       </div>
 
-      <nav class="desktop-nav" aria-label="Main navigation">
-        <button v-for="link in links" :key="link.id" type="button" @click="goTo(link.id)">{{ link.label }}</button>
-      </nav>
-
-      <button class="menu-toggle" type="button" :class="{ active: open }" @click="open = !open" aria-label="Menu"><span></span><span></span></button>
+      <button
+        class="menu-toggle"
+        :class="{ active: menuOpen }"
+        type="button"
+        :aria-expanded="menuOpen"
+        aria-label="Toggle menu"
+        @click="menuOpen = !menuOpen"
+      >
+        <span></span>
+        <span></span>
+      </button>
     </div>
 
     <Transition name="menu-fade">
-      <nav v-if="open" class="mobile-nav" aria-label="Mobile navigation">
-        <button v-for="(link,index) in links" :key="link.id" type="button" @click="goTo(link.id)"><span>0{{ index + 1 }}</span>{{ link.label }}</button>
+      <nav v-if="menuOpen" class="mobile-nav" aria-label="Mobile navigation">
+        <button
+          v-for="(item, index) in items"
+          :key="item.id"
+          type="button"
+          @click="navigate(item.id)"
+        >
+          <span>0{{ index + 1 }}</span>
+          {{ labels[item.key] }}
+        </button>
       </nav>
     </Transition>
   </header>

@@ -19,7 +19,7 @@ const contactForm = ref({
   budget: '',
   message: '',
 })
-const savedLocale = localStorage.getItem('portfolio-locale')
+const savedLocale = localStorage.getItem('webremote-locale')
 const browserLocale = navigator.language?.toLowerCase().startsWith('en') ? 'en' : 'uk'
 const locale = ref(savedLocale === 'uk' || savedLocale === 'en' ? savedLocale : browserLocale)
 let gsapContext
@@ -27,71 +27,73 @@ let scrollTween
 
 const translations = {
   uk: {
-    nav: { home: 'Головна', about: 'Про мене', stack: 'Стек', projects: 'Проєкти', contact: 'Контакти' },
+    nav: { home: 'Головна', about: 'Про WebRemote', stack: 'Експертиза', projects: 'Проєкти', contact: 'Контакти' },
     hero: {
-      kicker: 'Senior Full-Stack Developer',
-      title: 'Створюю цифрові',
-      titleAccent: 'продукти, API та інтерфейси.',
-      lead: 'Laravel, Vue.js, SaaS та AWS. Перетворюю складну бізнес-логіку на швидкі, надійні й зрозумілі вебпродукти.',
-      projects: 'Переглянути проєкти',
-      discuss: 'Обговорити завдання',
-      scroll: 'Гортайте далі',
+      kicker: 'Software Engineering Studio',
+      title: 'Створюємо цифрові',
+      titleAccent: 'продукти, що рухають бізнес уперед.',
+      lead: 'WebRemote проєктує та розробляє SaaS-платформи, REST API, корпоративні вебсистеми й хмарні рішення на Laravel, Vue.js та AWS.',
+      projects: 'Переглянути роботи',
+      discuss: 'Обговорити проєкт',
+      scroll: 'Дізнайтеся більше',
     },
     about: {
-      number: '01 / ПРО МЕНЕ',
-      title: 'Розробник, який розуміє не лише код, а й продукт.',
-      large: 'Понад 10 років створюю та підтримую вебсистеми: від особистих кабінетів і маркетплейсів до API-платформ та інтеграцій для великих компаній.',
-      text: 'Працюю з архітектурою, backend, frontend та інфраструктурою. Можу долучитися до нового продукту або обережно модернізувати великий legacy-проєкт без зупинки бізнесу.',
-      years: 'років досвіду', earned: 'зароблено на Upwork', hours: 'годин розробки',
+      number: '01 / ПРО WEBREMOTE',
+      title: 'Інженерний підхід до вебпродуктів — від ідеї до стабільного запуску.',
+      large: 'WebRemote — software engineering studio, заснована та очолювана Vitaliy Z. Ми створюємо нові продукти, API та інтеграції, а також модернізуємо складні legacy-системи.',
+      text: 'Кожен проєкт отримує пряме технічне лідерство, прозору комунікацію та фокус на бізнес-результаті. За потреби до роботи підключаються перевірені спеціалісти, а відповідальність за архітектуру та якість залишається в WebRemote.',
+      years: 'років інженерного досвіду', earned: 'зароблено на Upwork', hours: 'годин клієнтської розробки',
+      founder: 'Засновник і Lead Developer — Vitaliy Z.',
     },
-    stack: { number: '02 / ЕКСПЕРТИЗА', title: 'Технології — це інструмент.', accent: 'Головне — результат.' },
-    projects: { number: '03 / ПРОЄКТИ', title: 'Вибрані роботи', eyebrow: 'Вибраний проєкт', open: 'Відкрити проєкт' },
+    stack: { number: '02 / ЕКСПЕРТИЗА', title: 'Від архітектури та API', accent: 'до інтерфейсу й хмари.' },
+    projects: { number: '03 / ВИБРАНІ РОБОТИ', title: 'Продукти та системи', eyebrow: 'Проєкт WebRemote', open: 'Детальніше' },
     contact: {
-      number: '04 / КОНТАКТИ', title: 'Є ідея або складний проєкт?',
-      text: 'Обговорімо, як перетворити його на працюючий продукт.',
+      number: '04 / ПОЧНІМО ПРОЄКТ', title: 'Потрібен надійний технологічний партнер?',
+      text: 'Опишіть задачу — WebRemote запропонує технічний підхід, етапи реалізації та наступні кроки.',
       formTitle: 'Розкажіть про ваш проєкт',
       name: 'Ваше ім’я', email: 'Email', company: 'Компанія (необов’язково)',
       projectType: 'Тип проєкту', projectPlaceholder: 'Оберіть напрям',
-      projectOptions: ['Новий вебпродукт', 'API та інтеграції', 'Модернізація legacy', 'Підтримка та розвиток'],
+      projectOptions: ['Новий вебпродукт або SaaS', 'API та інтеграції', 'Модернізація legacy', 'Підтримка та розвиток'],
       budget: 'Орієнтовний бюджет', budgetPlaceholder: 'Оберіть діапазон',
       budgetOptions: ['До $2,000', '$2,000–$5,000', '$5,000–$10,000', 'Понад $10,000', 'Потрібна оцінка'],
-      message: 'Коротко опишіть завдання',
+      message: 'Коротко опишіть задачу',
       submit: 'Надіслати запит', sending: 'Надсилання…', sent: 'Повідомлення надіслано',
       error: 'Не вдалося надіслати. Спробуйте ще раз.',
       privacy: 'Натискаючи кнопку, ви погоджуєтесь на обробку даних для відповіді на запит.',
     },
   },
   en: {
-    nav: { home: 'Home', about: 'About', stack: 'Stack', projects: 'Projects', contact: 'Contact' },
+    nav: { home: 'Home', about: 'About WebRemote', stack: 'Expertise', projects: 'Work', contact: 'Contact' },
     hero: {
-      kicker: 'Senior Full-Stack Developer',
-      title: 'I build digital',
-      titleAccent: 'products, APIs and interfaces.',
-      lead: 'Laravel, Vue.js, SaaS and AWS. I turn complex business logic into fast, reliable and clear web products.',
-      projects: 'View projects',
+      kicker: 'Software Engineering Studio',
+      title: 'We build digital',
+      titleAccent: 'products that move businesses forward.',
+      lead: 'WebRemote designs and develops SaaS platforms, REST APIs, enterprise web systems and cloud solutions with Laravel, Vue.js and AWS.',
+      projects: 'View selected work',
       discuss: 'Discuss a project',
-      scroll: 'Scroll to explore',
+      scroll: 'Explore WebRemote',
     },
     about: {
-      number: '01 / ABOUT',
-      title: 'A developer who understands both code and product.',
-      large: 'For more than 10 years, I have built and maintained web systems—from customer portals and marketplaces to API platforms and enterprise integrations.',
-      text: 'I work across architecture, backend, frontend and infrastructure. I can join a new product or carefully modernize a large legacy system without interrupting the business.',
-      years: 'years of experience', earned: 'earned on Upwork', hours: 'development hours',
+      number: '01 / ABOUT WEBREMOTE',
+      title: 'An engineering approach to web products — from idea to reliable launch.',
+      large: 'WebRemote is a software engineering studio founded and led by Vitaliy Z. We build new products, APIs and integrations, and modernize complex legacy systems.',
+      text: 'Every engagement receives direct technical leadership, transparent communication and a strong focus on business outcomes. Trusted specialists join when needed, while WebRemote remains accountable for architecture and quality.',
+      years: 'years of engineering experience', earned: 'earned on Upwork', hours: 'hours of client development',
+      founder: 'Founder & Lead Developer — Vitaliy Z.',
     },
-    stack: { number: '02 / EXPERTISE', title: 'Technology is a tool.', accent: 'The result comes first.' },
-    projects: { number: '03 / PROJECTS', title: 'Selected work', eyebrow: 'Selected project', open: 'Open project' },
+    stack: { number: '02 / EXPERTISE', title: 'From architecture and APIs', accent: 'to interfaces and cloud.' },
+    projects: { number: '03 / SELECTED WORK', title: 'Products and systems', eyebrow: 'WebRemote project', open: 'View details' },
     contact: {
-      number: '04 / CONTACT', title: 'Have an idea or a complex project?',
-      text: 'Let’s discuss how to turn it into a working product.',
-      formTitle: 'Tell me about your project',
+      number: '04 / START A PROJECT', title: 'Looking for a reliable technology partner?',
+      text: 'Describe your challenge and WebRemote will propose a technical approach, delivery stages and clear next steps.',
+      formTitle: 'Tell us about your project',
       name: 'Your name', email: 'Email', company: 'Company (optional)',
       projectType: 'Project type', projectPlaceholder: 'Choose a direction',
-      projectOptions: ['New web product', 'API and integrations', 'Legacy modernization', 'Ongoing support and development'],
+      projectOptions: ['New web product or SaaS', 'API and integrations', 'Legacy modernization', 'Ongoing support and development'],
       budget: 'Estimated budget', budgetPlaceholder: 'Choose a range',
       budgetOptions: ['Up to $2,000', '$2,000–$5,000', '$5,000–$10,000', 'Over $10,000', 'Need an estimate'],
-      message: 'Briefly describe your project',
-      submit: 'Send request', sending: 'Sending…', sent: 'Message sent',
+      message: 'Briefly describe your challenge',
+      submit: 'Send inquiry', sending: 'Sending…', sent: 'Message sent',
       error: 'Unable to send. Please try again.',
       privacy: 'By submitting, you agree that your details may be used to reply to this request.',
     },
@@ -99,13 +101,13 @@ const translations = {
 }
 
 const localizedProjects = computed(() => locale.value === 'uk' ? [
-  { number: '01', title: 'DLispi Marketplace', description: 'Маркетплейс на Laravel 13 і Quasar/Vue 3: авторизація, карти, пошук, S3, realtime та PWA.', tags: ['Laravel 13', 'Vue 3', 'Quasar', 'AWS S3'] },
-  { number: '02', title: 'Retail API Platform', description: 'API та інтеграції для роздрібних мереж, обробки замовлень, товарних залишків і зовнішніх сервісів.', tags: ['Lumen', 'REST API', 'Redis', 'Integrations'] },
-  { number: '03', title: 'Legacy Modernization', description: 'Міграція великого інтернет-магазину з Laravel 5 на Laravel 13 зі збереженням бізнес-логіки.', tags: ['Laravel', 'Refactoring', 'MySQL', 'Docker'] },
+  { number: '01', title: 'DLispi Marketplace', description: 'Marketplace-платформа на Laravel 13 і Quasar/Vue 3: авторизація, карти, пошук, S3, realtime та PWA.', tags: ['Laravel 13', 'Vue 3', 'Quasar', 'AWS S3'] },
+  { number: '02', title: 'Retail API Platform', description: 'API та інтеграції для роздрібних мереж: замовлення, товарні залишки, зовнішні сервіси та автоматизація процесів.', tags: ['Lumen', 'REST API', 'Redis', 'Integrations'] },
+  { number: '03', title: 'Legacy Modernization', description: 'Поетапна міграція великого ecommerce-проєкту з Laravel 5 на Laravel 13 зі збереженням бізнес-логіки.', tags: ['Laravel', 'Refactoring', 'MySQL', 'Docker'] },
 ] : [
-  { number: '01', title: 'DLispi Marketplace', description: 'A Laravel 13 and Quasar/Vue 3 marketplace with authentication, maps, search, S3, realtime features and PWA support.', tags: ['Laravel 13', 'Vue 3', 'Quasar', 'AWS S3'] },
-  { number: '02', title: 'Retail API Platform', description: 'APIs and integrations for retail chains, order processing, inventory data and external services.', tags: ['Lumen', 'REST API', 'Redis', 'Integrations'] },
-  { number: '03', title: 'Legacy Modernization', description: 'Migration of a large ecommerce platform from Laravel 5 to Laravel 13 while preserving its business logic.', tags: ['Laravel', 'Refactoring', 'MySQL', 'Docker'] },
+  { number: '01', title: 'DLispi Marketplace', description: 'A marketplace platform built with Laravel 13 and Quasar/Vue 3, including authentication, maps, search, S3, realtime features and PWA support.', tags: ['Laravel 13', 'Vue 3', 'Quasar', 'AWS S3'] },
+  { number: '02', title: 'Retail API Platform', description: 'APIs and integrations for retail networks covering orders, inventory, external services and process automation.', tags: ['Lumen', 'REST API', 'Redis', 'Integrations'] },
+  { number: '03', title: 'Legacy Modernization', description: 'A staged migration of a large ecommerce system from Laravel 5 to Laravel 13 while preserving critical business logic.', tags: ['Laravel', 'Refactoring', 'MySQL', 'Docker'] },
 ])
 
 const t = computed(() => translations[locale.value])
@@ -317,7 +319,7 @@ function scrollToSection(id) {
 }
 
 watch(locale, async (value) => {
-  localStorage.setItem('portfolio-locale', value)
+  localStorage.setItem('webremote-locale', value)
   document.documentElement.lang = value
   await nextTick()
   ScrollTrigger.refresh()
@@ -546,7 +548,7 @@ onBeforeUnmount(() => {
 
       <section id="about" class="panel light-panel about-panel"><div class="panel-surface"><div class="panel-inner page-width section-grid">
         <div><p class="section-number">{{ t.about.number }}</p><h2>{{ t.about.title }}</h2></div>
-        <div class="about-copy"><p class="large-copy">{{ t.about.large }}</p><p>{{ t.about.text }}</p><div class="stats">
+        <div class="about-copy"><p class="large-copy">{{ t.about.large }}</p><p>{{ t.about.text }}</p><p class="founder-line">{{ t.about.founder }}</p><div class="stats">
           <div><strong>10+</strong><span>{{ t.about.years }}</span></div><div><strong>60K+</strong><span>{{ t.about.earned }}</span></div><div><strong>5K</strong><span>{{ t.about.hours }}</span></div>
         </div></div>
       </div></div></section>
@@ -567,7 +569,7 @@ onBeforeUnmount(() => {
             <p class="section-number">{{ t.contact.number }}</p>
             <h2>{{ t.contact.title }}</h2>
             <p>{{ t.contact.text }}</p>
-            <a class="contact-link" href="mailto:hello@example.com">hello@example.com <span>↗</span></a>
+            <a class="contact-link" href="mailto:hello@webremote.net">hello@webremote.net <span>↗</span></a>
           </div>
 
           <Transition
@@ -743,8 +745,8 @@ onBeforeUnmount(() => {
               <p class="success-text">
                 {{
                   locale === 'uk'
-                      ? 'Ваш запит успішно отримано. Я зв’яжуся з вами найближчим часом.'
-                      : 'Your request has been received successfully. I will get back to you as soon as possible.'
+                      ? 'Ваш запит успішно отримано. WebRemote зв’яжеться з вами найближчим часом.'
+                      : 'Your request has been received successfully. WebRemote will get back to you as soon as possible.'
                 }}
               </p>
 
@@ -752,8 +754,8 @@ onBeforeUnmount(() => {
                 <strong>
                   {{
                     locale === 'uk'
-                        ? 'Зазвичай відповідаю'
-                        : 'Typical response'
+                        ? 'Зазвичай відповідаємо'
+                        : 'Typical response time'
                   }}
                 </strong>
 
@@ -782,7 +784,7 @@ onBeforeUnmount(() => {
             </div>
           </Transition>
         </div>
-        <footer><span>© {{ new Date().getFullYear() }} Vitaliy Z.</span><span>Laravel · Vue · AWS</span></footer>
+        <footer><span>© {{ new Date().getFullYear() }} WebRemote</span><span>Founded by Vitaliy Z. · Laravel · Vue · AWS</span></footer>
       </div></div></section>
     </main>
   </div>

@@ -797,7 +797,7 @@ main {
     position: sticky;
     top: 0;
     width: 100%;
-    min-height: 84svh;
+    min-height: 100svh;
     margin-top: 0;
     will-change: transform, filter;
     transform: translateZ(0);
@@ -958,7 +958,7 @@ main {
     display: grid;
     grid-template-columns: minmax(0, .85fr) minmax(480px, 1.15fr);
     gap: clamp(55px, 8vw, 120px);
-    align-items: center;
+    align-items: start;
 }
 
 .contact-intro > p:not(.section-number) {
@@ -1105,6 +1105,7 @@ main {
 
 .stack-panel .panel-inner {
     width: min(1180px, calc(100% - 48px));
+    min-height: 100svh;
     margin-inline: auto;
     padding-block: clamp(82px, 9vh, 120px);
     display: flex;
@@ -1270,9 +1271,9 @@ main {
 
     .site-header {
         padding:
-                max(14px, env(safe-area-inset-top))
-                16px
-                14px;
+            max(14px, env(safe-area-inset-top))
+            16px
+            14px;
         align-items: center;
     }
 
@@ -1308,9 +1309,9 @@ main {
     .mobile-nav {
         z-index: 99;
         padding:
-                calc(96px + env(safe-area-inset-top))
-                22px
-                calc(32px + env(safe-area-inset-bottom));
+            calc(96px + env(safe-area-inset-top))
+            22px
+            calc(32px + env(safe-area-inset-bottom));
         overflow-y: auto;
     }
 
@@ -1367,9 +1368,9 @@ main {
         height: 100%;
         margin: 0 auto;
         padding:
-                clamp(104px, 15vh, 140px)
-                0
-                calc(42px + env(safe-area-inset-bottom));
+            clamp(104px, 15vh, 140px)
+            0
+            calc(42px + env(safe-area-inset-bottom));
         justify-content: flex-end;
         align-items: flex-start;
         pointer-events: none;
@@ -1725,5 +1726,56 @@ main {
 
     .hero-actions {
         margin-top: 16px;
+    }
+}
+
+
+/* WebRemote brand refinements --------------------------------------------- */
+.brand-mark {
+    font-size: 0;
+}
+
+.brand-mark::after {
+    content: 'WR';
+    font-size: 12px;
+    letter-spacing: -.04em;
+}
+
+.brand-text {
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    font-size: 12px;
+}
+
+.founder-line {
+    margin-top: 24px;
+    padding-left: 18px;
+    border-left: 2px solid var(--lime);
+    color: #17232c !important;
+    font-weight: 600;
+}
+
+.hero-kicker::before {
+    content: 'WEBREMOTE  /  ';
+    color: rgba(255, 255, 255, .58);
+}
+
+@media (max-width: 900px) {
+    .brand-text {
+        display: block;
+        max-width: 116px;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .founder-line {
+        margin-top: 20px;
+        padding-left: 14px;
+    }
+}
+
+@media (max-width: 390px) {
+    .brand-text {
+        display: none;
     }
 }
