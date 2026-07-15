@@ -1,16 +1,12 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
+import { computed, nextTick, ref, watch } from 'vue'
 import SiteHeader from './components/SiteHeader.vue'
 import ThreeBackground from './components/ThreeBackground.vue'
 import ProjectCard from './components/ProjectCard.vue'
 
-gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)
 
-const siteRoot = ref(null)
 const formStatus = ref('idle')
+const activeStackIndex = ref(null)
 const contactForm = ref({
   name: '',
   email: '',
@@ -22,8 +18,6 @@ const contactForm = ref({
 const savedLocale = localStorage.getItem('webremote-locale')
 const browserLocale = navigator.language?.toLowerCase().startsWith('en') ? 'en' : 'uk'
 const locale = ref(savedLocale === 'uk' || savedLocale === 'en' ? savedLocale : browserLocale)
-let gsapContext
-let scrollTween
 
 const translations = {
   uk: {
@@ -111,107 +105,64 @@ const localizedProjects = computed(() => locale.value === 'uk' ? [
 ])
 
 const t = computed(() => translations[locale.value])
-const stack = ['PHP / Laravel', 'Vue 3 / TypeScript', 'REST API / SaaS', 'AWS / Docker', 'PostgreSQL / MySQL', 'Redis / Queues']
+const stackItems = computed(() => locale.value === 'uk' ? [
+  {
+    title: 'PHP / Laravel',
+    description: 'Backend-основа для бізнес-логіки, особистих кабінетів, ecommerce, адміністративних систем і масштабованих вебзастосунків.',
+  },
+  {
+    title: 'Vue 3 / TypeScript',
+    description: 'Швидкі інтерактивні інтерфейси з передбачуваною структурою коду, типізацією та зручним подальшим розвитком продукту.',
+  },
+  {
+    title: 'REST API / SaaS',
+    description: 'API з’єднує сайт, мобільний застосунок і зовнішні сервіси. SaaS дозволяє надавати продукт багатьом клієнтам через єдину платформу.',
+  },
+  {
+    title: 'AWS / Docker',
+    description: 'Хмарна інфраструктура, автоматизоване розгортання та ізольоване середовище, щоб застосунок однаково працював локально й на сервері.',
+  },
+  {
+    title: 'PostgreSQL / MySQL',
+    description: 'Надійне зберігання даних, продумана структура таблиць, оптимізація запитів і стабільна робота системи зі зростанням навантаження.',
+  },
+  {
+    title: 'Redis / Queues',
+    description: 'Прискорення відповідей за допомогою кешу та виконання важких задач у фоні: листи, імпорт, обробка файлів і синхронізація даних.',
+  },
+] : [
+  {
+    title: 'PHP / Laravel',
+    description: 'A reliable backend foundation for business logic, customer portals, ecommerce, admin systems and scalable web applications.',
+  },
+  {
+    title: 'Vue 3 / TypeScript',
+    description: 'Fast interactive interfaces with a predictable code structure, type safety and a maintainable path for future product growth.',
+  },
+  {
+    title: 'REST API / SaaS',
+    description: 'APIs connect websites, mobile apps and external services. SaaS delivers one platform to multiple customers through a shared product.',
+  },
+  {
+    title: 'AWS / Docker',
+    description: 'Cloud infrastructure, repeatable deployments and isolated environments that keep applications consistent from development to production.',
+  },
+  {
+    title: 'PostgreSQL / MySQL',
+    description: 'Reliable data storage, well-designed schemas, optimized queries and stable performance as the system and workload grow.',
+  },
+  {
+    title: 'Redis / Queues',
+    description: 'Faster responses through caching and background processing for email, imports, file processing and data synchronization.',
+  },
+])
+
+function toggleStackItem(index) {
+  activeStackIndex.value = activeStackIndex.value === index ? null : index
+}
 
 function setLocale(value) {
   locale.value = value
-}
-
-function onContactLeave(element, done) {
-  if (!element) {
-    done()
-    return
-  }
-
-  gsap.killTweensOf(element)
-
-  gsap.to(element, {
-    opacity: 0,
-    scale: 0.97,
-    y: -20,
-    duration: 0.28,
-    ease: 'power2.in',
-    overwrite: true,
-    onComplete: done,
-  })
-}
-
-function onContactEnter(element, done) {
-  if (!element) {
-    done()
-    return
-  }
-
-  const circle = element.querySelector('.success-circle')
-  const check = element.querySelector('.success-check')
-  const contentElements = element.querySelectorAll(
-    '.success-eyebrow, .contact-success h3, .success-text, .success-info, .success-button',
-  )
-
-  gsap.killTweensOf(element)
-
-  gsap.set(element, {
-    opacity: 0,
-    scale: 0.97,
-    y: 30,
-  })
-
-  if (circle) {
-    gsap.set(circle, {
-      strokeDasharray: 160,
-      strokeDashoffset: 160,
-    })
-  }
-
-  if (check) {
-    gsap.set(check, {
-      strokeDasharray: 50,
-      strokeDashoffset: 50,
-    })
-  }
-
-  if (contentElements.length) {
-    gsap.set(contentElements, {
-      opacity: 0,
-      y: 16,
-    })
-  }
-
-  const timeline = gsap.timeline({ onComplete: done })
-
-  timeline.to(element, {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    duration: 0.45,
-    ease: 'power3.out',
-  })
-
-  if (circle) {
-    timeline.to(circle, {
-      strokeDashoffset: 0,
-      duration: 0.55,
-      ease: 'power2.out',
-    }, '-=0.25')
-  }
-
-  if (check) {
-    timeline.to(check, {
-      strokeDashoffset: 0,
-      duration: 0.35,
-      ease: 'power2.out',
-    }, '-=0.15')
-  }
-
-  if (contentElements.length) {
-    timeline.to(contentElements, {
-      opacity: 1,
-      y: 0,
-      duration: 0.35,
-      stagger: 0.07,
-      ease: 'power2.out',
-    }, '-=0.2')
-  }
 }
 
 const resetContactForm = () => {
@@ -261,273 +212,45 @@ async function submitContactForm() {
 }
 
 function scrollToSection(id) {
-  if (scrollTween) {
-    scrollTween.kill()
-    scrollTween = null
-  }
+  const target = id === 'home'
+    ? document.documentElement
+    : document.getElementById(id)
 
-  gsap.killTweensOf(window)
-
-  const targetY = id === 'home'
-      ? 0
-      : document.getElementById(id)?.offsetTop
-
-  if (typeof targetY !== 'number') {
+  if (!target) {
     return
   }
 
-  scrollTween = gsap.to(window, {
-    duration: 0.55,
+  if (id === 'home') {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    })
+  } else {
+    target.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }
 
-    scrollTo: {
-      y: targetY,
-      autoKill: false,
-    },
-
-    ease: 'power2.out',
-    overwrite: true,
-
-    onUpdate: () => {
-      ScrollTrigger.update()
-    },
-
-    onComplete: () => {
-      if (id === 'home') {
-        window.scrollTo(0, 0)
-      }
-
-      if (id === 'stack') {
-        gsap.set('.stack-row', {
-          opacity: 1,
-          x: 0,
-          clearProps: 'transform',
-        })
-      }
-
-      history.replaceState(
-          null,
-          '',
-          id === 'home'
-              ? `${window.location.pathname}${window.location.search}`
-              : `#${id}`,
-      )
-
-      ScrollTrigger.update()
-      scrollTween = null
-    },
-  })
+  history.replaceState(
+    null,
+    '',
+    id === 'home'
+      ? `${window.location.pathname}${window.location.search}`
+      : `#${id}`,
+  )
 }
 
 watch(locale, async (value) => {
   localStorage.setItem('webremote-locale', value)
   document.documentElement.lang = value
   await nextTick()
-  ScrollTrigger.refresh()
 }, { immediate: true })
 
-onMounted(async () => {
-  await nextTick()
-
-  const reduceMotion = window.matchMedia(
-    '(prefers-reduced-motion: reduce)',
-  ).matches
-
-  if (reduceMotion) {
-    gsap.set(
-      '.panel-inner, .stack-row, .project-card, .hero-content, .three-background',
-      {
-        clearProps: 'all',
-        opacity: 1,
-        x: 0,
-        y: 0,
-        scale: 1,
-      },
-    )
-    return
-  }
-
-  gsapContext = gsap.context(() => {
-    const media = gsap.matchMedia()
-
-    media.add('(min-width: 901px)', () => {
-      const panels = gsap.utils.toArray('.panel')
-
-      panels.forEach((panel, index) => {
-        const content = panel.querySelector('.panel-inner')
-
-        if (content && index > 0) {
-          gsap.fromTo(
-            content,
-            { y: 48 },
-            {
-              y: 0,
-              ease: 'none',
-              scrollTrigger: {
-                trigger: panel,
-                start: 'top 92%',
-                end: 'top 38%',
-                scrub: 0.7,
-                invalidateOnRefresh: true,
-              },
-            },
-          )
-        }
-
-        if (index < panels.length - 1) {
-          gsap.to(panel, {
-            scale: 0.985,
-            y: -12,
-            transformOrigin: 'center top',
-            ease: 'none',
-            scrollTrigger: {
-              trigger: panels[index + 1],
-              start: 'top 100%',
-              end: 'top 22%',
-              scrub: true,
-              invalidateOnRefresh: true,
-            },
-          })
-        }
-      })
-
-      gsap.to('.hero-content', {
-        y: -48,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: '#home',
-          start: 'top top',
-          end: 'bottom 35%',
-          scrub: true,
-          invalidateOnRefresh: true,
-        },
-      })
-
-      gsap.to('.three-background', {
-        scale: 1.05,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: '#home',
-          start: 'top top',
-          end: 'bottom top',
-          scrub: true,
-          invalidateOnRefresh: true,
-        },
-      })
-
-      const stackRows = gsap.utils.toArray('.stack-row')
-
-      gsap.fromTo(
-        stackRows,
-        { opacity: 0, x: 28 },
-        {
-          opacity: 1,
-          x: 0,
-          duration: 0.5,
-          stagger: 0.05,
-          ease: 'power2.out',
-          overwrite: true,
-          scrollTrigger: {
-            trigger: '.stack-list',
-            start: 'top 88%',
-            once: true,
-            invalidateOnRefresh: true,
-          },
-        },
-      )
-
-      gsap.from('.project-card', {
-        y: 54,
-        opacity: 0,
-        scale: 0.985,
-        duration: 0.65,
-        stagger: 0.1,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: '.project-list',
-          start: 'top 85%',
-          once: true,
-          invalidateOnRefresh: true,
-        },
-      })
-    })
-
-    media.add('(max-width: 900px)', () => {
-      gsap.set('.panel, .panel-inner, .stack-row, .project-card', {
-        clearProps: 'transform,filter,opacity,visibility',
-        opacity: 1,
-        x: 0,
-        y: 0,
-        scale: 1,
-      })
-
-      gsap.from('.about-panel .panel-inner', {
-        y: 24,
-        opacity: 0,
-        duration: 0.55,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: '.about-panel',
-          start: 'top 88%',
-          once: true,
-        },
-      })
-
-      gsap.from('.stack-row', {
-        y: 18,
-        opacity: 0,
-        duration: 0.42,
-        stagger: 0.04,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: '.stack-list',
-          start: 'top 90%',
-          once: true,
-        },
-      })
-
-      gsap.from('.project-card', {
-        y: 24,
-        opacity: 0,
-        duration: 0.5,
-        stagger: 0.07,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: '.project-list',
-          start: 'top 90%',
-          once: true,
-        },
-      })
-
-      gsap.from('.contact-layout', {
-        y: 24,
-        opacity: 0,
-        duration: 0.55,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: '.contact-panel',
-          start: 'top 88%',
-          once: true,
-        },
-      })
-    })
-
-    return () => media.revert()
-  }, siteRoot.value)
-
-  window.setTimeout(() => {
-    ScrollTrigger.refresh()
-  }, 150)
-})
-
-onBeforeUnmount(() => {
-  scrollTween?.kill()
-  gsapContext?.revert()
-  ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
-})
 </script>
 
 <template>
-  <div ref="siteRoot" class="site-shell">
+  <div class="site-shell">
     <SiteHeader :locale="locale" :labels="t.nav" @navigate="scrollToSection" @change-locale="setLocale" />
     <main>
       <section id="home" class="panel hero-panel">
@@ -555,7 +278,35 @@ onBeforeUnmount(() => {
 
       <section id="stack" class="panel dark-panel stack-panel"><div class="panel-surface"><div class="panel-inner page-width">
         <div class="section-heading"><p class="section-number">{{ t.stack.number }}</p><h2>{{ t.stack.title }}<br>{{ t.stack.accent }}</h2></div>
-        <div class="stack-list"><div v-for="(item,index) in stack" :key="item" class="stack-row"><span>0{{ index + 1 }}</span><h3>{{ item }}</h3><span class="stack-arrow">↗</span></div></div>
+        <div class="stack-list">
+          <article
+            v-for="(item, index) in stackItems"
+            :key="item.title"
+            class="stack-item"
+            :class="{ active: activeStackIndex === index }"
+          >
+            <button
+              class="stack-row stack-trigger"
+              type="button"
+              :aria-expanded="activeStackIndex === index"
+              :aria-controls="`stack-description-${index}`"
+              @click="toggleStackItem(index)"
+            >
+              <span class="stack-index">0{{ index + 1 }}</span>
+              <h3>{{ item.title }}</h3>
+              <span class="stack-arrow" aria-hidden="true">+</span>
+            </button>
+
+            <div
+              :id="`stack-description-${index}`"
+              class="stack-description"
+            >
+              <div class="stack-description-inner">
+                <p>{{ item.description }}</p>
+              </div>
+            </div>
+          </article>
+        </div>
       </div></div></section>
 
       <section id="projects" class="panel projects-panel"><div class="panel-surface"><div class="panel-inner page-width">
@@ -573,10 +324,8 @@ onBeforeUnmount(() => {
           </div>
 
           <Transition
+              name="contact-swap"
               mode="out-in"
-              :css="false"
-              @leave="onContactLeave"
-              @enter="onContactEnter"
           >
             <form
                 v-if="formStatus !== 'sent'"

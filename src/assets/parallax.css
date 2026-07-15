@@ -1,0 +1,170 @@
+/* CSS-only page overlap / parallax
+   Import this file AFTER main.css:
+   import './assets/parallax.css'
+*/
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 88px;
+}
+
+main {
+  position: relative;
+  isolation: isolate;
+}
+
+/* The first three screens stay pinned while the next one covers them. */
+.hero-panel,
+.about-panel,
+.stack-panel {
+  position: sticky !important;
+  top: 0 !important;
+  width: 100%;
+  min-height: 100svh;
+  overflow: hidden;
+  transform: none !important;
+  filter: none !important;
+}
+
+.hero-panel {
+  z-index: 1;
+}
+
+.about-panel {
+  z-index: 2;
+}
+
+.stack-panel {
+  z-index: 3;
+}
+
+/* Projects may be taller than the viewport and must scroll completely. */
+.projects-panel {
+  position: relative !important;
+  top: auto !important;
+  z-index: 4;
+  width: 100%;
+  height: auto !important;
+  min-height: 100svh;
+  overflow: visible !important;
+  transform: none !important;
+  filter: none !important;
+  background: #d9ded8;
+}
+
+/* Contact overlaps the rounded bottom edge only after projects are finished. */
+.contact-panel {
+  position: relative !important;
+  top: auto !important;
+  z-index: 5;
+  width: 100%;
+  height: auto !important;
+  min-height: 100svh;
+  margin-top: -36px;
+  overflow: hidden;
+  transform: none !important;
+  filter: none !important;
+}
+
+.about-panel,
+.stack-panel,
+.projects-panel,
+.contact-panel {
+  border-radius: 36px 36px 0 0;
+  box-shadow: 0 -24px 60px rgba(0, 0, 0, 0.16);
+}
+
+/* CSS transition between contact form and success message. */
+.contact-swap-enter-active,
+.contact-swap-leave-active {
+  transition:
+    opacity 280ms ease,
+    transform 280ms ease;
+  transform-origin: center;
+}
+
+.contact-swap-enter-from {
+  opacity: 0;
+  transform: translateY(24px) scale(0.98);
+}
+
+.contact-swap-leave-to {
+  opacity: 0;
+  transform: translateY(-16px) scale(0.98);
+}
+
+/* Draw the success icon without JavaScript. */
+.contact-success .success-circle {
+  stroke-dasharray: 160;
+  stroke-dashoffset: 160;
+  animation: success-circle-draw 550ms 180ms ease forwards;
+}
+
+.contact-success .success-check {
+  stroke-dasharray: 50;
+  stroke-dashoffset: 50;
+  animation: success-check-draw 350ms 520ms ease forwards;
+}
+
+@keyframes success-circle-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes success-check-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Mobile: normal document flow is more stable and easier to use. */
+@media (max-width: 900px) {
+  html {
+    scroll-padding-top: 72px;
+  }
+
+  .hero-panel,
+  .about-panel,
+  .stack-panel,
+  .projects-panel,
+  .contact-panel {
+    position: relative !important;
+    top: auto !important;
+    min-height: auto;
+    height: auto !important;
+    overflow: visible;
+    transform: none !important;
+    filter: none !important;
+    border-radius: 24px 24px 0 0;
+  }
+
+  .hero-panel {
+    min-height: 100svh;
+    overflow: hidden;
+  }
+
+  .contact-panel {
+    margin-top: -24px;
+    overflow: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .contact-swap-enter-active,
+  .contact-swap-leave-active,
+  .contact-success .success-circle,
+  .contact-success .success-check {
+    transition: none;
+    animation: none;
+  }
+
+  .contact-success .success-circle,
+  .contact-success .success-check {
+    stroke-dashoffset: 0;
+  }
+}

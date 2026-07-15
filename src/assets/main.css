@@ -1,7 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap");
 
 :root {
-    font-family: 'DM Sans', sans-serif;
+    font-family: "DM Sans", sans-serif;
     color: #eef2f5;
     background: #06101d;
     font-synthesis: none;
@@ -217,7 +217,7 @@ button {
 .hero-content h1 {
     max-width: 650px;
     margin: 0;
-    font: 500 clamp(46px, 5.1vw, 78px)/.96 'Manrope', sans-serif;
+    font: 500 clamp(46px, 5.1vw, 78px)/.96 "Manrope", sans-serif;
     letter-spacing: -.06em;
 }
 
@@ -290,7 +290,6 @@ button {
 
 .light-panel, .dark-panel, .projects-panel, .contact-panel {
     z-index: 2;
-    margin-top: -7vh;
     border-radius: 36px 36px 0 0;
     box-shadow: 0 -30px 70px rgba(0, 0, 0, .18);
 }
@@ -316,7 +315,7 @@ button {
 
 .section-grid h2, .section-heading h2, .contact-content h2 {
     margin: 0;
-    font: 500 clamp(42px, 5.2vw, 76px)/1.05 'Manrope', sans-serif;
+    font: 500 clamp(42px, 5.2vw, 76px)/1.05 "Manrope", sans-serif;
     letter-spacing: -.055em;
 }
 
@@ -353,7 +352,7 @@ button {
 }
 
 .stats strong {
-    font: 500 40px/1 'Manrope';
+    font: 500 40px/1 "Manrope";
     letter-spacing: -.05em;
 }
 
@@ -379,39 +378,6 @@ button {
 
 .section-heading h2 {
     max-width: 850px;
-}
-
-.stack-list {
-    border-top: 1px solid rgba(255, 255, 255, .18);
-}
-
-.stack-row {
-    display: grid;
-    grid-template-columns:70px 1fr 40px;
-    align-items: center;
-    padding: 28px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, .15);
-    transition: .3s;
-}
-
-.stack-row:hover {
-    padding-left: 18px;
-    color: var(--lime);
-}
-
-.stack-row > span:first-child {
-    color: #77838e;
-    font-size: 12px;
-}
-
-.stack-row h3 {
-    margin: 0;
-    font: 500 clamp(26px, 3vw, 44px)/1.15 'Manrope';
-    letter-spacing: -.04em;
-}
-
-.stack-arrow {
-    font-size: 22px;
 }
 
 .projects-panel {
@@ -444,13 +410,13 @@ button {
 }
 
 .project-index {
-    font: 500 15px 'Manrope';
+    font: 500 15px "Manrope";
     color: #7f8b82;
 }
 
 .project-copy h3 {
     margin: 0 0 18px;
-    font: 500 clamp(34px, 4.3vw, 64px)/1.05 'Manrope';
+    font: 500 clamp(34px, 4.3vw, 64px)/1.05 "Manrope";
     letter-spacing: -.05em;
 }
 
@@ -516,12 +482,7 @@ button {
 
 .contact-content h2 {
     max-width: 900px;
-    font-size: clamp(54px, 8vw, 118px);
-}
-
-.contact-content > p:not(.section-number) {
-    font-size: 20px;
-    margin: 32px 0 60px;
+    font-size: clamp(54px, 8vw, 93px);
 }
 
 .contact-link {
@@ -531,7 +492,7 @@ button {
     border-top: 1px solid rgba(16, 26, 14, .4);
     border-bottom: 1px solid rgba(16, 26, 14, .4);
     padding: 30px 0;
-    font: 500 clamp(25px, 4vw, 50px) 'Manrope';
+    font: 500 clamp(25px, 4vw, 50px) "Manrope";
     letter-spacing: -.04em;
 }
 
@@ -583,12 +544,12 @@ button {
     border-bottom: 1px solid rgba(255, 255, 255, .14);
     background: none;
     padding: 22px 0;
-    font: 500 31px 'Manrope';
+    font: 500 31px "Manrope";
     text-align: left;
 }
 
 .mobile-nav button span {
-    font: 500 11px 'DM Sans';
+    font: 500 11px "DM Sans";
     color: var(--lime);
     padding-top: 8px;
 }
@@ -667,7 +628,6 @@ button {
     }
 
     .light-panel, .dark-panel, .projects-panel, .contact-panel {
-        margin-top: -4vh;
         border-radius: 24px 24px 0 0;
     }
 
@@ -787,54 +747,8 @@ button {
     }
 }
 
-/* GSAP scroll-overlap ------------------------------------------------------ */
-main {
-    position: relative;
-    isolation: isolate;
-}
 
-.panel {
-    position: sticky;
-    top: 0;
-    width: 100%;
-    min-height: 100svh;
-    margin-top: 0;
-    will-change: transform, filter;
-    transform: translateZ(0);
-    overflow: hidden;
-}
-
-.panel-surface {
-    position: relative;
-    width: 100%;
-    min-height: inherit;
-}
-
-.hero-surface {
-    height: 100%;
-}
-
-.light-panel,
-.dark-panel,
-.projects-panel,
-.contact-panel {
-    margin-top: 0;
-    border-radius: 36px 36px 0 0;
-}
-
-/* A small visible lip makes the incoming page feel like a physical card. */
-.light-panel::before,
-.dark-panel::before,
-.projects-panel::before,
-.contact-panel::before {
-    content: '';
-    position: absolute;
-    inset: 0 0 auto;
-    height: 1px;
-    background: rgba(255, 255, 255, .22);
-    z-index: 5;
-}
-
+/* Compact projects layout on desktop */
 @media (min-width: 901px) {
     .projects-panel {
         padding-top: 95px;
@@ -848,14 +762,6 @@ main {
     .projects-panel .project-card {
         padding-top: 28px;
         padding-bottom: 28px;
-    }
-}
-
-@media (max-width: 900px) {
-    /* Long mobile pages remain naturally scrollable; GSAP reveals still work. */
-    .panel {
-        position: relative;
-        top: auto;
     }
 }
 
@@ -889,7 +795,7 @@ main {
     padding: 0;
     background: none;
     color: rgba(255, 255, 255, .5);
-    font: 600 11px 'DM Sans', sans-serif;
+    font: 600 11px "DM Sans", sans-serif;
     cursor: pointer;
 }
 
@@ -946,9 +852,6 @@ main {
     }
 }
 
-.contact-panel {
-    padding: 105px 0 45px;
-}
 
 .contact-content {
     text-align: left;
@@ -980,7 +883,7 @@ main {
 
 .contact-form h3 {
     margin: 0 0 28px;
-    font: 500 clamp(25px, 2.3vw, 34px)/1.15 'Manrope', sans-serif;
+    font: 500 clamp(25px, 2.3vw, 34px)/1.15 "Manrope", sans-serif;
     letter-spacing: -.035em;
 }
 
@@ -1105,9 +1008,7 @@ main {
 
 .stack-panel .panel-inner {
     width: min(1180px, calc(100% - 48px));
-    min-height: 100svh;
     margin-inline: auto;
-    padding-block: clamp(82px, 9vh, 120px);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -1150,7 +1051,7 @@ main {
 .stack-row h3 {
     min-width: 0;
     margin: 0;
-    font: 500 clamp(22px, 2.7vw, 38px)/1.08 'Manrope', sans-serif;
+    font: 500 clamp(22px, 2.7vw, 38px)/1.08 "Manrope", sans-serif;
     letter-spacing: -.035em;
     overflow-wrap: anywhere;
     word-break: normal;
@@ -1736,7 +1637,7 @@ main {
 }
 
 .brand-mark::after {
-    content: 'WR';
+    content: "WR";
     font-size: 12px;
     letter-spacing: -.04em;
 }
@@ -1756,7 +1657,7 @@ main {
 }
 
 .hero-kicker::before {
-    content: 'WEBREMOTE  /  ';
+    content: "WEBREMOTE  /  ";
     color: rgba(255, 255, 255, .58);
 }
 
