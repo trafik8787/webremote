@@ -15,13 +15,26 @@ main {
 
 /* The first three screens stay pinned while the next one covers them. */
 .hero-panel,
-.about-panel,
-.stack-panel {
+.about-panel {
   position: sticky !important;
   top: 0 !important;
   width: 100%;
   min-height: 100svh;
   overflow: hidden;
+  transform: none !important;
+  filter: none !important;
+}
+
+/* Expertise contains more content than one viewport.
+   It must scroll completely before the next section appears. */
+.stack-panel {
+  position: relative !important;
+  top: auto !important;
+  z-index: 3;
+  width: 100%;
+  height: auto !important;
+  min-height: 100svh;
+  overflow: visible !important;
   transform: none !important;
   filter: none !important;
 }
@@ -78,8 +91,8 @@ main {
 .contact-swap-enter-active,
 .contact-swap-leave-active {
   transition:
-    opacity 280ms ease,
-    transform 280ms ease;
+          opacity 280ms ease,
+          transform 280ms ease;
   transform-origin: center;
 }
 
