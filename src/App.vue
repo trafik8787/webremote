@@ -294,6 +294,14 @@ function scrollToSection(id) {
         window.scrollTo(0, 0)
       }
 
+      if (id === 'stack') {
+        gsap.set('.stack-row', {
+          opacity: 1,
+          x: 0,
+          clearProps: 'transform',
+        })
+      }
+
       history.replaceState(
           null,
           '',
@@ -317,14 +325,36 @@ watch(locale, async (value) => {
 
 onMounted(async () => {
   await nextTick()
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+  const reduceMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)',
+  ).matches
+
+  if (reduceMotion) {
+    gsap.set(
+      '.panel-inner, .stack-row, .project-card, .hero-content, .three-background',
+      {
+        clearProps: 'all',
+        opacity: 1,
+        x: 0,
+        y: 0,
+        scale: 1,
+      },
+    )
+    return
+  }
 
   gsapContext = gsap.context(() => {
-    const panels = gsap.utils.toArray('.panel')
-    panels.forEach((panel, index) => {
-      const content = panel.querySelector('.panel-inner')
-      if (content && index > 0) {
-        gsap.fromTo(
+    const media = gsap.matchMedia()
+
+    media.add('(min-width: 901px)', () => {
+      const panels = gsap.utils.toArray('.panel')
+
+      panels.forEach((panel, index) => {
+        const content = panel.querySelector('.panel-inner')
+
+        if (content && index > 0) {
+          gsap.fromTo(
             content,
             { y: 48 },
             {
@@ -335,31 +365,156 @@ onMounted(async () => {
                 start: 'top 92%',
                 end: 'top 38%',
                 scrub: 0.7,
+                invalidateOnRefresh: true,
               },
             },
-        )
-      }
-      if (index < panels.length - 1) {
-        gsap.to(panel, {
-          scale: 0.985,
-          y: -12,
-          transformOrigin: 'center top',
-          ease: 'none',
+          )
+        }
+
+        if (index < panels.length - 1) {
+          gsap.to(panel, {
+            scale: 0.985,
+            y: -12,
+            transformOrigin: 'center top',
+            ease: 'none',
+            scrollTrigger: {
+              trigger: panels[index + 1],
+              start: 'top 100%',
+              end: 'top 22%',
+              scrub: true,
+              invalidateOnRefresh: true,
+            },
+          })
+        }
+      })
+
+      gsap.to('.hero-content', {
+        y: -48,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '#home',
+          start: 'top top',
+          end: 'bottom 35%',
+          scrub: true,
+          invalidateOnRefresh: true,
+        },
+      })
+
+      gsap.to('.three-background', {
+        scale: 1.05,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '#home',
+          start: 'top top',
+          end: 'bottom top',
+          scrub: true,
+          invalidateOnRefresh: true,
+        },
+      })
+
+      const stackRows = gsap.utils.toArray('.stack-row')
+
+      gsap.fromTo(
+        stackRows,
+        { opacity: 0, x: 28 },
+        {
+          opacity: 1,
+          x: 0,
+          duration: 0.5,
+          stagger: 0.05,
+          ease: 'power2.out',
+          overwrite: true,
           scrollTrigger: {
-            trigger: panels[index + 1],
-            start: 'top 100%',
-            end: 'top 22%',
-            scrub: true,
+            trigger: '.stack-list',
+            start: 'top 88%',
+            once: true,
+            invalidateOnRefresh: true,
           },
-        })
-      }
+        },
+      )
+
+      gsap.from('.project-card', {
+        y: 54,
+        opacity: 0,
+        scale: 0.985,
+        duration: 0.65,
+        stagger: 0.1,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: '.project-list',
+          start: 'top 85%',
+          once: true,
+          invalidateOnRefresh: true,
+        },
+      })
     })
-    gsap.to('.hero-content', { y: -85, opacity: 0.72, ease: 'none', scrollTrigger: { trigger: '#home', start: 'top top', end: 'bottom 35%', scrub: true } })
-    gsap.to('.three-background', { scale: 1.08, ease: 'none', scrollTrigger: { trigger: '#home', start: 'top top', end: 'bottom top', scrub: true } })
-    gsap.from('.stack-row', { x: 80, opacity: 0, stagger: 0.08, ease: 'power2.out', scrollTrigger: { trigger: '.stack-list', start: 'top 78%', toggleActions: 'play none none reverse' } })
-    gsap.from('.project-card', { y: 70, opacity: 0, scale: 0.97, stagger: 0.14, ease: 'power3.out', scrollTrigger: { trigger: '.project-list', start: 'top 82%', toggleActions: 'play none none reverse' } })
+
+    media.add('(max-width: 900px)', () => {
+      gsap.set('.panel, .panel-inner, .stack-row, .project-card', {
+        clearProps: 'transform,filter,opacity,visibility',
+        opacity: 1,
+        x: 0,
+        y: 0,
+        scale: 1,
+      })
+
+      gsap.from('.about-panel .panel-inner', {
+        y: 24,
+        opacity: 0,
+        duration: 0.55,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: '.about-panel',
+          start: 'top 88%',
+          once: true,
+        },
+      })
+
+      gsap.from('.stack-row', {
+        y: 18,
+        opacity: 0,
+        duration: 0.42,
+        stagger: 0.04,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: '.stack-list',
+          start: 'top 90%',
+          once: true,
+        },
+      })
+
+      gsap.from('.project-card', {
+        y: 24,
+        opacity: 0,
+        duration: 0.5,
+        stagger: 0.07,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: '.project-list',
+          start: 'top 90%',
+          once: true,
+        },
+      })
+
+      gsap.from('.contact-layout', {
+        y: 24,
+        opacity: 0,
+        duration: 0.55,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: '.contact-panel',
+          start: 'top 88%',
+          once: true,
+        },
+      })
+    })
+
+    return () => media.revert()
   }, siteRoot.value)
-  ScrollTrigger.refresh()
+
+  window.setTimeout(() => {
+    ScrollTrigger.refresh()
+  }, 150)
 })
 
 onBeforeUnmount(() => {
@@ -632,13 +787,3 @@ onBeforeUnmount(() => {
     </main>
   </div>
 </template>
-<style scoped>
-.contact-success {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-</style>
