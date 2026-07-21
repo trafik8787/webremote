@@ -22,7 +22,7 @@ defineProps({
 
           <div class="stats">
             <div><strong>10+</strong><span>{{ content.years }}</span></div>
-            <div><strong>60K+</strong><span>{{ content.earned }}</span></div>
+            <div><strong>9+</strong><span>{{ content.expertise }}</span></div>
             <div><strong>5K</strong><span>{{ content.hours }}</span></div>
           </div>
         </div>

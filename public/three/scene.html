@@ -104,28 +104,39 @@ var floatingPhysics = {
 var floatingWidth = 72;
 var floatingDepth = 8;
 
-if (hasWebGLSupport()) {
-    try {
-        init();
+try {
+    if (init()) {
         startAnimation();
-    } catch (error) {
+    } else {
         reportSceneStatus("webremote-scene-error");
-        console.warn("WebGL scene initialization failed; using CSS fallback.", error);
+        console.warn("WebGL is unavailable; using CSS fallback.");
     }
-} else {
+} catch (error) {
     reportSceneStatus("webremote-scene-error");
-    console.warn("WebGL is unavailable; using CSS fallback.");
+    console.warn("WebGL scene initialization failed; using CSS fallback.", error);
 }
 
-function hasWebGLSupport() {
+function createWebGLRenderer() {
     try {
         var canvas = document.createElement("canvas");
-        return Boolean(
-            window.WebGLRenderingContext &&
-            (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))
-        );
+        var attributes = {
+            alpha: true,
+            antialias: true,
+            depth: true,
+            powerPreference: "high-performance"
+        };
+        var context = canvas.getContext("webgl", attributes) ||
+            canvas.getContext("experimental-webgl", attributes);
+
+        if (!context) return null;
+
+        return new THREE.WebGLRenderer({
+            canvas: canvas,
+            context: context,
+            antialias: true
+        });
     } catch (error) {
-        return false;
+        return null;
     }
 }
 
@@ -160,7 +171,9 @@ window.addEventListener("message", function (event) {
 function init() {
     container = document.getElementById("con");
 
-    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer = createWebGLRenderer();
+    if (!renderer) return false;
+
     var maxPixelRatio = window.innerWidth < 768 ? 1.2 : 1.5;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -196,6 +209,7 @@ function init() {
     window.addEventListener("resize", onWindowResize, false);
 
     updateDayNightCycle(0);
+    return true;
 }
 
 function createLights() {
