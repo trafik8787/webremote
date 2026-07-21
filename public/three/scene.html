@@ -37,6 +37,7 @@ var cameraBaseY = 25;
 var previousTime = performance.now();
 var animationFrameId = null;
 var isSceneActive = true;
+var sceneReady = false;
 
 var parameters = { distance: 400 };
 
@@ -103,8 +104,35 @@ var floatingPhysics = {
 var floatingWidth = 72;
 var floatingDepth = 8;
 
-init();
-startAnimation();
+if (hasWebGLSupport()) {
+    try {
+        init();
+        startAnimation();
+    } catch (error) {
+        reportSceneStatus("webremote-scene-error");
+        console.warn("WebGL scene initialization failed; using CSS fallback.", error);
+    }
+} else {
+    reportSceneStatus("webremote-scene-error");
+    console.warn("WebGL is unavailable; using CSS fallback.");
+}
+
+function hasWebGLSupport() {
+    try {
+        var canvas = document.createElement("canvas");
+        return Boolean(
+            window.WebGLRenderingContext &&
+            (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))
+        );
+    } catch (error) {
+        return false;
+    }
+}
+
+function reportSceneStatus(type) {
+    if (window.parent === window) return;
+    window.parent.postMessage({ type: type }, window.location.origin);
+}
 
 function startAnimation() {
     if (animationFrameId !== null || !isSceneActive) return;
@@ -1009,7 +1037,21 @@ function updateTextEnvironment(delta) {
 function animate(now) {
     animationFrameId = null;
     if (!isSceneActive) return;
-    render(now);
+
+    try {
+        render(now);
+    } catch (error) {
+        isSceneActive = false;
+        reportSceneStatus("webremote-scene-error");
+        console.warn("WebGL scene rendering failed; using CSS fallback.", error);
+        return;
+    }
+
+    if (!sceneReady) {
+        sceneReady = true;
+        reportSceneStatus("webremote-scene-ready");
+    }
+
     animationFrameId = requestAnimationFrame(animate);
 }
 

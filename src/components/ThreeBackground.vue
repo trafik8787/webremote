@@ -16,8 +16,19 @@ function updateSceneActivity() {
 }
 
 function handleSceneLoad() {
-  loaded.value = true
   updateSceneActivity()
+}
+
+function handleSceneMessage(event) {
+  if (event.origin !== window.location.origin) return
+  if (event.source !== sceneFrame.value?.contentWindow) return
+
+  if (event.data?.type === 'webremote-scene-ready') {
+    loaded.value = true
+  } else if (event.data?.type === 'webremote-scene-error') {
+    loaded.value = false
+    sceneSrc.value = undefined
+  }
 }
 
 onMounted(() => {
@@ -43,11 +54,13 @@ onMounted(() => {
   }
 
   document.addEventListener('visibilitychange', updateSceneActivity)
+  window.addEventListener('message', handleSceneMessage)
 })
 
 onBeforeUnmount(() => {
   visibilityObserver?.disconnect()
   document.removeEventListener('visibilitychange', updateSceneActivity)
+  window.removeEventListener('message', handleSceneMessage)
 })
 </script>
 
