@@ -100,7 +100,7 @@ button {
     backdrop-filter: blur(20px);
 }
 
-.desktop-nav button {
+.desktop-nav a {
     border: 0;
     background: transparent;
     color: #fff;
@@ -112,7 +112,7 @@ button {
     transition: .25s;
 }
 
-.desktop-nav button:hover {
+.desktop-nav a:hover {
     opacity: 1;
     background: rgba(255, 255, 255, .1);
 }
@@ -541,7 +541,7 @@ button {
     pointer-events: auto;
 }
 
-.mobile-nav button {
+.mobile-nav a {
     display: flex;
     gap: 25px;
     border: 0;
@@ -552,7 +552,7 @@ button {
     text-align: left;
 }
 
-.mobile-nav button span {
+.mobile-nav a span {
     font: 500 11px "DM Sans";
     color: var(--lime);
     padding-top: 8px;
@@ -807,7 +807,7 @@ button {
     color: var(--lime);
 }
 
-.hero-actions button {
+.hero-actions a {
     font-family: inherit;
     cursor: pointer;
 }
@@ -1225,7 +1225,7 @@ button {
         overflow-y: auto;
     }
 
-    .mobile-nav button {
+    .mobile-nav a {
         min-height: 66px;
         padding: 18px 0;
         font-size: clamp(25px, 8vw, 36px);

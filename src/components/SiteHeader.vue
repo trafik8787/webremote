@@ -28,6 +28,10 @@ function navigate(id) {
   emit('navigate', id)
 }
 
+function sectionHref(id) {
+  return id === 'home' ? '/' : `#${id}`
+}
+
 function changeLocale(value) {
   emit('change-locale', value)
 }
@@ -35,20 +39,20 @@ function changeLocale(value) {
 
 <template>
   <header class="site-header">
-    <button class="brand" type="button" aria-label="WebRemote home" @click="navigate('home')">
+    <a class="brand" href="/" aria-label="WebRemote home" @click.prevent="navigate('home')">
       <span class="brand-mark">WR</span>
       <span class="brand-text">WebRemote</span>
-    </button>
+    </a>
 
     <nav class="desktop-nav" aria-label="Main navigation">
-      <button
+      <a
         v-for="item in items"
         :key="item.id"
-        type="button"
+        :href="sectionHref(item.id)"
         @click="navigate(item.id)"
       >
         {{ labels[item.key] }}
-      </button>
+      </a>
     </nav>
 
     <div class="header-actions">
@@ -81,15 +85,15 @@ function changeLocale(value) {
 
     <Transition name="menu-fade">
       <nav v-if="menuOpen" class="mobile-nav" aria-label="Mobile navigation">
-        <button
+        <a
           v-for="(item, index) in items"
           :key="item.id"
-          type="button"
+          :href="sectionHref(item.id)"
           @click="navigate(item.id)"
         >
           <span>0{{ index + 1 }}</span>
           {{ labels[item.key] }}
-        </button>
+        </a>
       </nav>
     </Transition>
   </header>

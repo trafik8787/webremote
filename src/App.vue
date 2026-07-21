@@ -380,8 +380,8 @@ watch(locale, async (value) => {
             <h1>{{ t.hero.title }}<span>{{ t.hero.titleAccent }}</span></h1>
             <p class="hero-lead">{{ t.hero.lead }}</p>
             <div class="hero-actions">
-              <button class="button primary" type="button" @click="scrollToSection('contact')">{{ t.hero.discuss }} <span>↘</span></button>
-              <button class="text-link" type="button" @click="scrollToSection('projects')" >{{ t.hero.projects }}</button>
+              <a class="button primary" href="#contact" @click.prevent="scrollToSection('contact')">{{ t.hero.discuss }} <span>↘</span></a>
+              <a class="text-link" href="#projects" @click.prevent="scrollToSection('projects')">{{ t.hero.projects }}</a>
             </div>
           </div>
           <div class="scroll-note"><span></span>{{ t.hero.scroll }}</div>
