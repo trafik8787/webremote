@@ -36,6 +36,7 @@ jobs:
       - name: Build application
         env:
           TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
+          CONTACT_API_URL: ${{ vars.CONTACT_API_URL }}
         run: |
           test -n "$TURNSTILE_SITE_KEY"
           npm run build

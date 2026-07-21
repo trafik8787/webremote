@@ -13,6 +13,8 @@ const formStatus = ref('idle')
 const turnstileToken = ref('')
 const contactSection = ref(null)
 const turnstileSiteKey = import.meta.env.TURNSTILE_SITE_KEY
+const contactApiUrl = import.meta.env.CONTACT_API_URL
+  || 'https://rff28ijdx7.execute-api.eu-central-1.amazonaws.com/contact'
 const activeStackIndex = ref(null)
 const contactForm = ref({
   name: '',
@@ -285,7 +287,7 @@ async function submitContactForm() {
 
   try {
     const response = await fetch(
-        'https://rff28ijdx7.execute-api.eu-central-1.amazonaws.com/contact',
+        contactApiUrl,
         {
           method: 'POST',
           headers: {
