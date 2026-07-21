@@ -35,6 +35,8 @@ var windowHalfY = window.innerHeight / 2;
 var cameraBaseX = 30;
 var cameraBaseY = 25;
 var previousTime = performance.now();
+var animationFrameId = null;
+var isSceneActive = true;
 
 var parameters = { distance: 400 };
 
@@ -102,7 +104,30 @@ var floatingWidth = 72;
 var floatingDepth = 8;
 
 init();
-requestAnimationFrame(animate);
+startAnimation();
+
+function startAnimation() {
+    if (animationFrameId !== null || !isSceneActive) return;
+    previousTime = performance.now();
+    animationFrameId = requestAnimationFrame(animate);
+}
+
+function setSceneActive(active) {
+    isSceneActive = active;
+
+    if (active) {
+        startAnimation();
+    } else if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+    }
+}
+
+window.addEventListener("message", function (event) {
+    if (event.origin !== window.location.origin) return;
+    if (!event.data || event.data.type !== "webremote-scene-visibility") return;
+    setSceneActive(Boolean(event.data.active));
+});
 
 function init() {
     container = document.getElementById("con");
@@ -191,8 +216,20 @@ function createTextGroup() {
     ];
 
     group = new THREE.Group();
-    group.position.y = 100;
+    updateResponsiveComposition();
     scene.add(group);
+}
+
+function updateResponsiveComposition() {
+    if (!group) return;
+
+    if (window.innerWidth < 768) {
+        group.position.y = 78;
+        group.scale.set(0.58, 0.58, 0.58);
+    } else {
+        group.position.y = 100;
+        group.scale.set(1, 1, 1);
+    }
 }
 
 function createWater() {
@@ -937,6 +974,7 @@ function onWindowResize() {
     var maxPixelRatio = window.innerWidth < 768 ? 1.2 : 1.5;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
     renderer.setSize(window.innerWidth, window.innerHeight);
+    updateResponsiveComposition();
 }
 
 
@@ -969,8 +1007,10 @@ function updateTextEnvironment(delta) {
 }
 
 function animate(now) {
-    requestAnimationFrame(animate);
+    animationFrameId = null;
+    if (!isSceneActive) return;
     render(now);
+    animationFrameId = requestAnimationFrame(animate);
 }
 
 function render(now) {
