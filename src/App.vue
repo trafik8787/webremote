@@ -1,15 +1,18 @@
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue'
 import SiteHeader from './components/SiteHeader.vue'
-import ThreeBackground from './components/ThreeBackground.vue'
-import ProjectCard from './components/ProjectCard.vue'
-import TurnstileWidget from './components/TurnstileWidget.vue'
+import HeroSection from './components/HeroSection.vue'
+import AboutSection from './components/AboutSection.vue'
+import StackSection from './components/StackSection.vue'
+import WhySection from './components/WhySection.vue'
+import ProjectsSection from './components/ProjectsSection.vue'
+import ContactSection from './components/ContactSection.vue'
 
 
 const formStatus = ref('idle')
 const turnstileToken = ref('')
-const turnstileWidget = ref(null)
-const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY
+const contactSection = ref(null)
+const turnstileSiteKey = import.meta.env.TURNSTILE_SITE_KEY
 const activeStackIndex = ref(null)
 const contactForm = ref({
   name: '',
@@ -269,7 +272,7 @@ const resetContactForm = () => {
 
   turnstileToken.value = ''
   formStatus.value = 'idle'
-  nextTick(() => turnstileWidget.value?.reset())
+  nextTick(() => contactSection.value?.resetTurnstile())
 }
 
 async function submitContactForm() {
@@ -308,7 +311,7 @@ async function submitContactForm() {
   } catch (error) {
     console.error(error)
     turnstileToken.value = ''
-    turnstileWidget.value?.reset()
+    contactSection.value?.resetTurnstile()
     formStatus.value = 'error'
   }
 }
@@ -372,334 +375,29 @@ watch(locale, async (value) => {
   <div class="site-shell">
     <SiteHeader :locale="locale" :labels="t.nav" @navigate="scrollToSection" @change-locale="setLocale" />
     <main>
-      <section id="home" class="panel hero-panel">
-        <div class="panel-surface hero-surface">
-          <ThreeBackground />
-          <div class="hero-content page-width">
-            <p class="hero-kicker">{{ t.hero.kicker }}</p>
-            <h1>{{ t.hero.title }}<span>{{ t.hero.titleAccent }}</span></h1>
-            <p class="hero-lead">{{ t.hero.lead }}</p>
-            <div class="hero-actions">
-              <a class="button primary" href="#contact" @click.prevent="scrollToSection('contact')">{{ t.hero.discuss }} <span>↘</span></a>
-              <a class="text-link" href="#projects" @click.prevent="scrollToSection('projects')">{{ t.hero.projects }}</a>
-            </div>
-          </div>
-          <div class="scroll-note"><span></span>{{ t.hero.scroll }}</div>
-        </div>
-      </section>
-
-      <section id="about" class="panel light-panel about-panel"><div class="panel-surface"><div class="panel-inner page-width section-grid">
-        <div><p class="section-number">{{ t.about.number }}</p><h2>{{ t.about.title }}</h2></div>
-        <div class="about-copy"><p class="large-copy">{{ t.about.large }}</p><p>{{ t.about.text }}</p>
-          <div class="stats">
-          <div><strong>10+</strong><span>{{ t.about.years }}</span></div><div><strong>60K+</strong><span>{{ t.about.earned }}</span></div><div><strong>5K</strong><span>{{ t.about.hours }}</span></div>
-        </div></div>
-      </div></div></section>
-
-      <section id="stack" class="panel dark-panel stack-panel"><div class="panel-surface"><div class="panel-inner page-width">
-        <div class="section-heading"><p class="section-number">{{ t.stack.number }}</p><h2>{{ t.stack.title }}<br>{{ t.stack.accent }}</h2></div>
-        <div class="stack-list">
-          <article
-            v-for="(item, index) in stackItems"
-            :key="item.title"
-            class="stack-item"
-            :class="{ active: activeStackIndex === index }"
-          >
-            <button
-              class="stack-row stack-trigger"
-              type="button"
-              :aria-expanded="activeStackIndex === index"
-              :aria-controls="`stack-description-${index}`"
-              @click="toggleStackItem(index)"
-            >
-              <span class="stack-index">0{{ index + 1 }}</span>
-              <h3>{{ item.title }}</h3>
-              <span class="stack-arrow" aria-hidden="true">+</span>
-            </button>
-
-            <div
-              :id="`stack-description-${index}`"
-              class="stack-description"
-            >
-              <div class="stack-description-inner">
-                <p>{{ item.description }}</p>
-              </div>
-            </div>
-          </article>
-        </div>
-      </div></div></section>
-
-
-      <section id="why" class="panel why-panel">
-        <div class="panel-surface">
-          <div class="panel-inner page-width">
-            <div class="section-heading why-heading">
-              <p class="section-number">{{ t.why.number }}</p>
-              <h2>{{ t.why.title }}</h2>
-            </div>
-            <div class="why-grid">
-              <article v-for="(item, index) in whyItems" :key="item.number" class="why-card" :class="{ 'why-card-wide': index === whyItems.length - 1 }">
-                <div class="why-card-top">
-                  <span class="why-number">{{ item.number }}</span>
-                  <span class="why-indicator" aria-hidden="true"></span>
-                </div>
-                <h3>{{ item.title }}</h3>
-                <p>{{ item.description }}</p>
-              </article>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="projects" class="panel projects-panel"><div class="panel-surface"><div class="panel-inner page-width">
-        <div class="section-heading projects-heading"><p class="section-number">{{ t.projects.number }}</p><h2>{{ t.projects.title }}</h2></div>
-        <div class="project-list"><ProjectCard v-for="project in localizedProjects" :key="project.number" v-bind="project" :eyebrow="t.projects.eyebrow" :open-label="t.projects.open" /></div>
-      </div></div></section>
-
-      <section id="contact" class="panel contact-panel"><div class="contact-orbit orbit-one"></div><div class="contact-orbit orbit-two"></div><div class="panel-surface"><div class="panel-inner page-width contact-content">
-        <div class="contact-layout">
-          <div class="contact-intro">
-            <p class="section-number">{{ t.contact.number }}</p>
-            <h2>{{ t.contact.title }}</h2>
-            <p>{{ t.contact.text }}</p>
-            <a class="contact-link" href="mailto:info@webremote.net">info@webremote.net <span>↗</span></a>
-          </div>
-
-          <Transition
-              name="contact-swap"
-              mode="out-in"
-          >
-            <form
-                v-if="formStatus !== 'sent'"
-                key="contact-form"
-                class="contact-form"
-                @submit.prevent="submitContactForm"
-            >
-              <h3>{{ t.contact.formTitle }}</h3>
-
-              <div class="form-grid">
-                <label>
-                  <span>{{ t.contact.name }}</span>
-
-                  <input
-                      v-model.trim="contactForm.name"
-                      type="text"
-                      autocomplete="name"
-                      required
-                  >
-                </label>
-
-                <label>
-                  <span>{{ t.contact.email }}</span>
-
-                  <input
-                      v-model.trim="contactForm.email"
-                      type="email"
-                      autocomplete="email"
-                      required
-                  >
-                </label>
-
-                <label class="form-wide">
-                  <span>{{ t.contact.company }}</span>
-
-                  <input
-                      v-model.trim="contactForm.company"
-                      type="text"
-                      autocomplete="organization"
-                  >
-                </label>
-
-                <label>
-                  <span>{{ t.contact.projectType }}</span>
-
-                  <select
-                      v-model="contactForm.projectType"
-                      required
-                  >
-                    <option
-                        value=""
-                        disabled
-                    >
-                      {{ t.contact.projectPlaceholder }}
-                    </option>
-
-                    <option
-                        v-for="option in t.contact.projectOptions"
-                        :key="option"
-                        :value="option"
-                    >
-                      {{ option }}
-                    </option>
-                  </select>
-                </label>
-
-                <label>
-                  <span>{{ t.contact.budget }}</span>
-
-                  <select
-                      v-model="contactForm.budget"
-                      required
-                  >
-                    <option
-                        value=""
-                        disabled
-                    >
-                      {{ t.contact.budgetPlaceholder }}
-                    </option>
-
-                    <option
-                        v-for="option in t.contact.budgetOptions"
-                        :key="option"
-                        :value="option"
-                    >
-                      {{ option }}
-                    </option>
-                  </select>
-                </label>
-
-                <label class="form-wide">
-                  <span>{{ t.contact.message }}</span>
-
-                  <textarea
-                      v-model.trim="contactForm.message"
-                      rows="5"
-                      required
-                  ></textarea>
-                </label>
-              </div>
-
-              <TurnstileWidget
-                  v-if="turnstileSiteKey"
-                  ref="turnstileWidget"
-                  class="form-wide"
-                  :site-key="turnstileSiteKey"
-                  :language="locale"
-                  @verified="handleTurnstileVerified"
-                  @expired="handleTurnstileExpired"
-                  @error="handleTurnstileError"
-              />
-
-              <p v-else class="form-error form-wide">
-                VITE_TURNSTILE_SITE_KEY is not configured.
-              </p>
-
-              <button
-                  class="form-submit"
-                  type="submit"
-                  :disabled="formStatus === 'sending' || !turnstileSiteKey"
-              >
-                {{
-                  formStatus === 'sending'
-                      ? t.contact.sending
-                      : t.contact.submit
-                }}
-
-                <span>↗</span>
-              </button>
-
-              <p v-if="formStatus === 'error'" class="form-error">
-                {{ t.contact.error }}
-              </p>
-
-              <p v-else-if="formStatus === 'verification-required'" class="form-error">
-                {{ t.contact.verificationRequired }}
-              </p>
-
-              <p v-else-if="formStatus === 'verification-error'" class="form-error">
-                {{ t.contact.verificationError }}
-              </p>
-
-              <p class="form-privacy">
-                {{ t.contact.privacy }}
-              </p>
-            </form>
-
-            <div
-                v-else
-                key="contact-success"
-                class="contact-success"
-            >
-              <div class="success-icon">
-                <svg
-                    viewBox="0 0 52 52"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                >
-                  <circle
-                      cx="26"
-                      cy="26"
-                      r="25"
-                      class="success-circle"
-                  />
-
-                  <path
-                      d="M15 27L23 35L38 18"
-                      class="success-check"
-                  />
-                </svg>
-              </div>
-
-              <p class="success-eyebrow">
-                {{
-                  locale === 'uk'
-                      ? 'ПОВІДОМЛЕННЯ НАДІСЛАНО'
-                      : 'MESSAGE SENT'
-                }}
-              </p>
-
-              <h3>
-                {{
-                  locale === 'uk'
-                      ? 'Дякую за звернення!'
-                      : 'Thank you!'
-                }}
-              </h3>
-
-              <p class="success-text">
-                {{
-                  locale === 'uk'
-                      ? 'Ваш запит успішно отримано. WebRemote зв’яжеться з вами найближчим часом.'
-                      : 'Your request has been received successfully. WebRemote will get back to you as soon as possible.'
-                }}
-              </p>
-
-              <div class="success-info">
-                <strong>
-                  {{
-                    locale === 'uk'
-                        ? 'Зазвичай відповідаємо'
-                        : 'Typical response time'
-                  }}
-                </strong>
-
-                <span>
-                  {{
-                    locale === 'uk'
-                        ? 'протягом одного робочого дня'
-                        : 'within one business day'
-                  }}
-                </span>
-              </div>
-
-              <button
-                  class="form-submit success-button"
-                  type="button"
-                  @click="resetContactForm"
-              >
-                {{
-                  locale === 'uk'
-                      ? 'Надіслати ще один запит'
-                      : 'Send another request'
-                }}
-
-                <span>↗</span>
-              </button>
-            </div>
-          </Transition>
-        </div>
-        <footer><span>© {{ new Date().getFullYear() }} WebRemote</span><span>Laravel · Node.js · Vue.js · AWS · AI / LLM</span></footer>
-      </div></div></section>
+      <HeroSection :content="t.hero" @navigate="scrollToSection" />
+      <AboutSection :content="t.about" />
+      <StackSection
+        :content="t.stack"
+        :items="stackItems"
+        :active-index="activeStackIndex"
+        @toggle="toggleStackItem"
+      />
+      <WhySection :content="t.why" :items="whyItems" />
+      <ProjectsSection :content="t.projects" :projects="localizedProjects" />
+      <ContactSection
+        ref="contactSection"
+        :content="t.contact"
+        :form="contactForm"
+        :status="formStatus"
+        :locale="locale"
+        :turnstile-site-key="turnstileSiteKey"
+        @submit="submitContactForm"
+        @reset="resetContactForm"
+        @turnstile-verified="handleTurnstileVerified"
+        @turnstile-expired="handleTurnstileExpired"
+        @turnstile-error="handleTurnstileError"
+      />
     </main>
   </div>
 </template>

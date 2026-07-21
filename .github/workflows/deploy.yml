@@ -34,7 +34,11 @@ jobs:
         run: npm ci
 
       - name: Build application
-        run: npm run build
+        env:
+          TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
+        run: |
+          test -n "$TURNSTILE_SITE_KEY"
+          npm run build
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
