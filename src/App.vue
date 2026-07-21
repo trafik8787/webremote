@@ -30,7 +30,7 @@ const translations = {
       kicker: 'Software Engineering Studio',
       title: 'Створюємо цифрові',
       titleAccent: 'продукти, що рухають бізнес уперед.',
-      lead: 'WebRemote проєктує та розробляє SaaS-платформи, REST API, корпоративні вебсистеми й хмарні рішення на Laravel, Node.js, Vue.js та AWS.',
+      lead: 'WebRemote проєктує та розробляє SaaS-платформи, REST API, AI-інтеграції, корпоративні вебсистеми й хмарні рішення на Laravel, Node.js, Vue.js та AWS.',
       projects: 'Переглянути роботи',
       discuss: 'Обговорити проєкт',
       scroll: 'Дізнайтеся більше',
@@ -41,17 +41,17 @@ const translations = {
       large: 'WebRemote — software engineering studio. Ми створюємо сучасні вебпродукти, REST API, інтеграції та модернізуємо складні legacy-системи.',
       text: 'Кожен проєкт отримує пряме технічне лідерство, прозору комунікацію та фокус на бізнес-результаті. За потреби до роботи підключаються перевірені спеціалісти, а відповідальність за архітектуру та якість залишається в WebRemote.',
       years: 'років інженерного досвіду', earned: 'зароблено на Upwork', hours: 'годин клієнтської розробки',
-    },
+          },
     stack: { number: '02 / ЕКСПЕРТИЗА', title: 'Від backend-архітектури та API', accent: 'до інтерфейсів, автоматизації й хмари.' },
-    services: { number: '03 / ПОСЛУГИ', title: 'Рішення для запуску, розвитку та модернізації', eyebrow: 'Напрям роботи', open: 'Обговорити' },
+    why: { number: '03 / ЧОМУ WEBREMOTE', title: 'Чому обирають WebRemote' },
     projects: { number: '04 / ВИБРАНІ РОБОТИ', title: 'Продукти та системи', eyebrow: 'Проєкт WebRemote', open: 'Детальніше' },
     contact: {
-      number: '05 / ПОЧНІМО ПРОЄКТ', title: 'Потрібен надійний технологічний партнер?',
-      text: 'Опишіть задачу — WebRemote запропонує технічний підхід, етапи реалізації та наступні кроки.',
+      number: '05 / ПОЧНІМО ПРОЄКТ', title: 'Потрібен вебпродукт, автоматизація або AI-інтеграція?',
+      text: 'Опишіть задачу — WebRemote запропонує технічний підхід, етапи реалізації та зрозумілі наступні кроки.',
       formTitle: 'Розкажіть про ваш проєкт',
       name: 'Ваше ім’я', email: 'Email', company: 'Компанія (необов’язково)',
       projectType: 'Тип проєкту', projectPlaceholder: 'Оберіть напрям',
-      projectOptions: ['Новий вебпродукт або SaaS', 'API та інтеграції', 'Модернізація legacy', 'Підтримка та розвиток'],
+      projectOptions: ['Новий вебпродукт або SaaS', 'API та інтеграції', 'AI / LLM інтеграція', 'Модернізація legacy', 'Підтримка та розвиток'],
       budget: 'Орієнтовний бюджет', budgetPlaceholder: 'Оберіть діапазон',
       budgetOptions: ['До $2,000', '$2,000–$5,000', '$5,000–$10,000', 'Понад $10,000', 'Потрібна оцінка'],
       message: 'Коротко опишіть задачу',
@@ -68,7 +68,7 @@ const translations = {
       kicker: 'Software Engineering Studio',
       title: 'We build digital',
       titleAccent: 'products that move businesses forward.',
-      lead: 'WebRemote designs and develops SaaS platforms, REST APIs, enterprise web systems and cloud solutions with Laravel, Node.js, Vue.js and AWS.',
+      lead: 'WebRemote designs and develops SaaS platforms, REST APIs, AI integrations, enterprise web systems and cloud solutions with Laravel, Node.js, Vue.js and AWS.',
       projects: 'View selected work',
       discuss: 'Discuss a project',
       scroll: 'Explore WebRemote',
@@ -79,17 +79,17 @@ const translations = {
       large: 'WebRemote is a software engineering studio. We build modern web products, REST APIs, integrations and modernize complex legacy systems.',
       text: 'Every engagement receives direct technical leadership, transparent communication and a strong focus on business outcomes. Trusted specialists join when needed, while WebRemote remains accountable for architecture and quality.',
       years: 'years of engineering experience', earned: 'earned on Upwork', hours: 'hours of client development',
-    },
+          },
     stack: { number: '02 / EXPERTISE', title: 'From backend architecture and APIs', accent: 'to interfaces, automation and cloud.' },
-    services: { number: '03 / SERVICES', title: 'Solutions for launching, scaling and modernizing products', eyebrow: 'Service', open: 'Discuss' },
+    why: { number: '03 / WHY WEBREMOTE', title: 'Why choose WebRemote' },
     projects: { number: '04 / SELECTED WORK', title: 'Products and systems', eyebrow: 'WebRemote project', open: 'View details' },
     contact: {
-      number: '05 / START A PROJECT', title: 'Looking for a reliable technology partner?',
+      number: '05 / START A PROJECT', title: 'Need a web product, automation or AI integration?',
       text: 'Describe your challenge and WebRemote will propose a technical approach, delivery stages and clear next steps.',
       formTitle: 'Tell us about your project',
       name: 'Your name', email: 'Email', company: 'Company (optional)',
       projectType: 'Project type', projectPlaceholder: 'Choose a direction',
-      projectOptions: ['New web product or SaaS', 'API and integrations', 'Legacy modernization', 'Ongoing support and development'],
+      projectOptions: ['New web product or SaaS', 'API and integrations', 'AI / LLM integration', 'Legacy modernization', 'Ongoing support and development'],
       budget: 'Estimated budget', budgetPlaceholder: 'Choose a range',
       budgetOptions: ['Up to $2,000', '$2,000–$5,000', '$5,000–$10,000', 'Over $10,000', 'Need an estimate'],
       message: 'Briefly describe your challenge',
@@ -103,33 +103,76 @@ const translations = {
 }
 
 const localizedProjects = computed(() => locale.value === 'uk' ? [
-  { number: '01', title: 'DLispi Marketplace', description: 'Marketplace-платформа на Laravel 13 і Quasar/Vue 3: авторизація, карти, пошук, S3, realtime та PWA.', tags: ['Laravel 13', 'Vue 3', 'Quasar', 'AWS S3'] },
-  { number: '02', title: 'Retail API Platform', description: 'API та інтеграції для роздрібних мереж: замовлення, товарні залишки, зовнішні сервіси та автоматизація процесів.', tags: ['Lumen', 'REST API', 'Redis', 'Integrations'] },
-  { number: '03', title: 'Legacy Modernization', description: 'Поетапна міграція великого ecommerce-проєкту з Laravel 5 на Laravel 13 зі збереженням бізнес-логіки.', tags: ['Laravel', 'Refactoring', 'MySQL', 'Docker'] },
+  {
+    number: '01',
+    title: 'DLispi Marketplace',
+    description: 'Marketplace-платформа на Laravel 13 і Quasar/Vue 3: авторизація, карти, пошук, S3, realtime та PWA.',
+    tags: ['Laravel 13', 'Vue 3', 'Quasar', 'AWS S3'],
+  },
+  {
+    number: '02',
+    title: 'Retail API Platform',
+    description: 'API та інтеграції для роздрібних мереж: замовлення, товарні залишки, зовнішні сервіси та автоматизація процесів.',
+    tags: ['Lumen', 'REST API', 'Redis', 'Integrations'],
+  },
+  {
+    number: '03',
+    title: 'Legacy Modernization',
+    description: 'Поетапна міграція великого ecommerce-проєкту з Laravel 5 на Laravel 13 зі збереженням бізнес-логіки.',
+    tags: ['Laravel', 'Refactoring', 'MySQL', 'Docker'],
+  },
+  {
+    number: '04',
+    title: 'AI Business Assistant',
+    description: 'AI-помічник для роботи з документами, пошуку у базі знань, генерації відповідей та автоматизації внутрішніх процесів.',
+    tags: ['OpenAI API', 'LLM', 'RAG', 'Vector Search', 'Node.js'],
+  },
 ] : [
-  { number: '01', title: 'DLispi Marketplace', description: 'A marketplace platform built with Laravel 13 and Quasar/Vue 3, including authentication, maps, search, S3, realtime features and PWA support.', tags: ['Laravel 13', 'Vue 3', 'Quasar', 'AWS S3'] },
-  { number: '02', title: 'Retail API Platform', description: 'APIs and integrations for retail networks covering orders, inventory, external services and process automation.', tags: ['Lumen', 'REST API', 'Redis', 'Integrations'] },
-  { number: '03', title: 'Legacy Modernization', description: 'A staged migration of a large ecommerce system from Laravel 5 to Laravel 13 while preserving critical business logic.', tags: ['Laravel', 'Refactoring', 'MySQL', 'Docker'] },
+  {
+    number: '01',
+    title: 'DLispi Marketplace',
+    description: 'A marketplace platform built with Laravel 13 and Quasar/Vue 3, including authentication, maps, search, S3, realtime features and PWA support.',
+    tags: ['Laravel 13', 'Vue 3', 'Quasar', 'AWS S3'],
+  },
+  {
+    number: '02',
+    title: 'Retail API Platform',
+    description: 'APIs and integrations for retail networks covering orders, inventory, external services and process automation.',
+    tags: ['Lumen', 'REST API', 'Redis', 'Integrations'],
+  },
+  {
+    number: '03',
+    title: 'Legacy Modernization',
+    description: 'A staged migration of a large ecommerce system from Laravel 5 to Laravel 13 while preserving critical business logic.',
+    tags: ['Laravel', 'Refactoring', 'MySQL', 'Docker'],
+  },
+  {
+    number: '04',
+    title: 'AI Business Assistant',
+    description: 'An AI-powered assistant for document processing, knowledge search, response generation and workflow automation.',
+    tags: ['OpenAI API', 'LLM', 'RAG', 'Vector Search', 'Node.js'],
+  },
 ])
 
 
-const localizedServices = computed(() => locale.value === 'uk' ? [
-  { number: '01', title: 'Custom Web Development', description: 'Розробка вебзастосунків і корпоративних систем під конкретні бізнес-процеси.', tags: ['Laravel', 'Node.js', 'Vue.js'] },
-  { number: '02', title: 'REST API & Integrations', description: 'Проєктування API та інтеграція платіжних, логістичних, CRM, Google й інших зовнішніх сервісів.', tags: ['REST API', 'OAuth', 'Webhooks'] },
-  { number: '03', title: 'SaaS Platforms', description: 'Архітектура та розробка багатокористувацьких платформ, особистих кабінетів і систем підписки.', tags: ['SaaS', 'PostgreSQL', 'Redis'] },
-  { number: '04', title: 'Legacy Modernization', description: 'Безпечне оновлення застарілих систем, рефакторинг і поступова міграція без зупинки бізнесу.', tags: ['Migration', 'Refactoring', 'Testing'] },
-  { number: '05', title: 'AWS Cloud Solutions', description: 'S3, Lambda, SES, API Gateway, serverless-архітектура та надійне розгортання у хмарі.', tags: ['AWS', 'Serverless', 'Docker'] },
-  { number: '06', title: 'Performance & Consulting', description: 'Аудит архітектури, оптимізація запитів, продуктивності та технічне планування розвитку продукту.', tags: ['Audit', 'Optimization', 'Architecture'] },
-] : [
-  { number: '01', title: 'Custom Web Development', description: 'Web applications and enterprise systems designed around specific business processes.', tags: ['Laravel', 'Node.js', 'Vue.js'] },
-  { number: '02', title: 'REST API & Integrations', description: 'API design and integration with payments, logistics, CRM, Google and other external services.', tags: ['REST API', 'OAuth', 'Webhooks'] },
-  { number: '03', title: 'SaaS Platforms', description: 'Architecture and development for multi-user platforms, customer portals and subscription products.', tags: ['SaaS', 'PostgreSQL', 'Redis'] },
-  { number: '04', title: 'Legacy Modernization', description: 'Safe modernization, refactoring and staged migrations without interrupting business operations.', tags: ['Migration', 'Refactoring', 'Testing'] },
-  { number: '05', title: 'AWS Cloud Solutions', description: 'S3, Lambda, SES, API Gateway, serverless architecture and reliable cloud deployment.', tags: ['AWS', 'Serverless', 'Docker'] },
-  { number: '06', title: 'Performance & Consulting', description: 'Architecture reviews, query and performance optimization, and technical product planning.', tags: ['Audit', 'Optimization', 'Architecture'] },
-])
+
 
 const t = computed(() => translations[locale.value])
+
+const whyItems = computed(() => locale.value === 'uk' ? [
+  { number: '01', title: 'Clean Architecture', description: 'Добре структурований і підтримуваний код, розрахований на довгостроковий розвиток продукту.' },
+  { number: '02', title: 'Performance First', description: 'Швидкі та оптимізовані застосунки, готові до зростання навантаження й бізнесу.' },
+  { number: '03', title: 'Cloud Native', description: 'AWS, Docker, CI/CD і serverless-інфраструктура, підготовлена до стабільної роботи в production.' },
+  { number: '04', title: 'AI Integration', description: 'OpenAI, Claude, Gemini, RAG-пошук та автоматизація інтелектуальних бізнес-процесів.' },
+  { number: '05', title: 'Long-Term Partnership', description: 'Розвиток, підтримка та модернізація продукту — від MVP до складної корпоративної системи.' },
+] : [
+  { number: '01', title: 'Clean Architecture', description: 'Well-structured, maintainable software designed for long-term product growth.' },
+  { number: '02', title: 'Performance First', description: 'Fast, optimized applications built for scalability, reliability and business growth.' },
+  { number: '03', title: 'Cloud Native', description: 'AWS, Docker, CI/CD and serverless infrastructure prepared for stable production use.' },
+  { number: '04', title: 'AI Integration', description: 'OpenAI, Claude, Gemini, RAG search and intelligent workflow automation integrated into products.' },
+  { number: '05', title: 'Long-Term Partnership', description: 'Continuous development, support and modernization from MVP to enterprise systems.' },
+])
+
 const stackItems = computed(() => locale.value === 'uk' ? [
   {
     title: 'PHP / Laravel',
@@ -138,6 +181,10 @@ const stackItems = computed(() => locale.value === 'uk' ? [
   {
     title: 'Node.js',
     description: 'Серверні застосунки, REST API, AWS Lambda, автоматизація, інтеграції, черги та realtime-рішення на сучасному JavaScript.',
+  },
+  {
+    title: 'AI / LLM Integration',
+    description: 'Інтеграція OpenAI, Claude, Gemini та інших LLM: AI-помічники, RAG-пошук, генерація контенту, аналіз даних і автоматизація бізнес-процесів.',
   },
   {
     title: 'Vue 3 / TypeScript',
@@ -171,6 +218,10 @@ const stackItems = computed(() => locale.value === 'uk' ? [
   {
     title: 'Node.js',
     description: 'Server-side applications, REST APIs, AWS Lambda, automation, integrations, queues and realtime solutions with modern JavaScript.',
+  },
+  {
+    title: 'AI / LLM Integration',
+    description: 'Integration of OpenAI, Claude, Gemini and other LLMs for AI assistants, RAG search, content generation, data analysis and workflow automation.',
   },
   {
     title: 'Vue 3 / TypeScript',
@@ -281,8 +332,8 @@ function handleTurnstileError() {
 
 function scrollToSection(id) {
   const target = id === 'home'
-      ? document.documentElement
-      : document.getElementById(id)
+    ? document.documentElement
+    : document.getElementById(id)
 
   if (!target) {
     return
@@ -301,11 +352,11 @@ function scrollToSection(id) {
   }
 
   history.replaceState(
-      null,
-      '',
-      id === 'home'
-          ? `${window.location.pathname}${window.location.search}`
-          : `#${id}`,
+    null,
+    '',
+    id === 'home'
+      ? `${window.location.pathname}${window.location.search}`
+      : `#${id}`,
   )
 }
 
@@ -329,8 +380,8 @@ watch(locale, async (value) => {
             <h1>{{ t.hero.title }}<span>{{ t.hero.titleAccent }}</span></h1>
             <p class="hero-lead">{{ t.hero.lead }}</p>
             <div class="hero-actions">
-              <button class="button primary" type="button" @click="scrollToSection('projects')">{{ t.hero.projects }} <span>↘</span></button>
-              <button class="text-link" type="button" @click="scrollToSection('contact')">{{ t.hero.discuss }}</button>
+              <button class="button primary" type="button" @click="scrollToSection('contact')">{{ t.hero.discuss }} <span>↘</span></button>
+              <button class="text-link" type="button" @click="scrollToSection('projects')" >{{ t.hero.projects }}</button>
             </div>
           </div>
           <div class="scroll-note"><span></span>{{ t.hero.scroll }}</div>
@@ -341,25 +392,25 @@ watch(locale, async (value) => {
         <div><p class="section-number">{{ t.about.number }}</p><h2>{{ t.about.title }}</h2></div>
         <div class="about-copy"><p class="large-copy">{{ t.about.large }}</p><p>{{ t.about.text }}</p>
           <div class="stats">
-            <div><strong>10+</strong><span>{{ t.about.years }}</span></div><div><strong>60K+</strong><span>{{ t.about.earned }}</span></div><div><strong>5K</strong><span>{{ t.about.hours }}</span></div>
-          </div></div>
+          <div><strong>10+</strong><span>{{ t.about.years }}</span></div><div><strong>60K+</strong><span>{{ t.about.earned }}</span></div><div><strong>5K</strong><span>{{ t.about.hours }}</span></div>
+        </div></div>
       </div></div></section>
 
       <section id="stack" class="panel dark-panel stack-panel"><div class="panel-surface"><div class="panel-inner page-width">
         <div class="section-heading"><p class="section-number">{{ t.stack.number }}</p><h2>{{ t.stack.title }}<br>{{ t.stack.accent }}</h2></div>
         <div class="stack-list">
           <article
-              v-for="(item, index) in stackItems"
-              :key="item.title"
-              class="stack-item"
-              :class="{ active: activeStackIndex === index }"
+            v-for="(item, index) in stackItems"
+            :key="item.title"
+            class="stack-item"
+            :class="{ active: activeStackIndex === index }"
           >
             <button
-                class="stack-row stack-trigger"
-                type="button"
-                :aria-expanded="activeStackIndex === index"
-                :aria-controls="`stack-description-${index}`"
-                @click="toggleStackItem(index)"
+              class="stack-row stack-trigger"
+              type="button"
+              :aria-expanded="activeStackIndex === index"
+              :aria-controls="`stack-description-${index}`"
+              @click="toggleStackItem(index)"
             >
               <span class="stack-index">0{{ index + 1 }}</span>
               <h3>{{ item.title }}</h3>
@@ -367,8 +418,8 @@ watch(locale, async (value) => {
             </button>
 
             <div
-                :id="`stack-description-${index}`"
-                class="stack-description"
+              :id="`stack-description-${index}`"
+              class="stack-description"
             >
               <div class="stack-description-inner">
                 <p>{{ item.description }}</p>
@@ -379,36 +430,21 @@ watch(locale, async (value) => {
       </div></div></section>
 
 
-      <section id="services" class="panel services-panel">
+      <section id="why" class="panel why-panel">
         <div class="panel-surface">
           <div class="panel-inner page-width">
-            <div class="section-heading services-heading">
-              <p class="section-number">{{ t.services.number }}</p>
-              <h2>{{ t.services.title }}</h2>
+            <div class="section-heading why-heading">
+              <p class="section-number">{{ t.why.number }}</p>
+              <h2>{{ t.why.title }}</h2>
             </div>
-
-            <div class="services-grid">
-              <article
-                  v-for="service in localizedServices"
-                  :key="service.number"
-                  class="service-card"
-              >
-                <div class="service-card-top">
-                  <span class="service-number">{{ service.number }}</span>
-                  <span class="service-symbol" aria-hidden="true">↗</span>
+            <div class="why-grid">
+              <article v-for="(item, index) in whyItems" :key="item.number" class="why-card" :class="{ 'why-card-wide': index === whyItems.length - 1 }">
+                <div class="why-card-top">
+                  <span class="why-number">{{ item.number }}</span>
+                  <span class="why-indicator" aria-hidden="true"></span>
                 </div>
-
-                <h3>{{ service.title }}</h3>
-                <p>{{ service.description }}</p>
-
-                <ul class="service-tags">
-                  <li
-                      v-for="tag in service.tags"
-                      :key="tag"
-                  >
-                    {{ tag }}
-                  </li>
-                </ul>
+                <h3>{{ item.title }}</h3>
+                <p>{{ item.description }}</p>
               </article>
             </div>
           </div>
@@ -426,7 +462,7 @@ watch(locale, async (value) => {
             <p class="section-number">{{ t.contact.number }}</p>
             <h2>{{ t.contact.title }}</h2>
             <p>{{ t.contact.text }}</p>
-            <a class="contact-link" href="mailto:hello@webremote.net">hello@webremote.net <span>↗</span></a>
+            <a class="contact-link" href="mailto:info@webremote.net">info@webremote.net <span>↗</span></a>
           </div>
 
           <Transition
@@ -662,7 +698,7 @@ watch(locale, async (value) => {
             </div>
           </Transition>
         </div>
-        <footer><span>© {{ new Date().getFullYear() }} WebRemote</span><span>Laravel · Node.js · Vue.js · AWS · Docker · REST API · PostgreSQL · Redis</span></footer>
+        <footer><span>© {{ new Date().getFullYear() }} WebRemote</span><span>Laravel · Node.js · Vue.js · AWS · AI / LLM</span></footer>
       </div></div></section>
     </main>
   </div>

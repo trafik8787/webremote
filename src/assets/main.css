@@ -253,8 +253,10 @@ button {
 }
 
 .button.primary {
-    background: var(--lime);
-    color: #111a0d;
+    background:
+        radial-gradient(circle at 90% 8%, rgba(201,255,74,.08), transparent 28%),
+        linear-gradient(145deg,#0d1823 0%,#07111b 60%,#0a141f 100%);
+    color: #ffba69;
 }
 
 .button span {
@@ -465,8 +467,10 @@ button {
 .contact-panel {
     z-index: 5;
     min-height: 92vh;
-    background: var(--lime);
-    color: #101a0e;
+    background:
+            radial-gradient(circle at 88% 8%, rgba(201, 255, 74, .07), transparent 28%),
+            linear-gradient(145deg, #0d1823 0%, #07111b 60%, #0a141f 100%);
+    color: #eef3f6;
     padding: 150px 0 45px;
     overflow: hidden;
 }
@@ -477,7 +481,7 @@ button {
 }
 
 .contact-content .section-number {
-    color: #50652a;
+    color: var(--lime);
 }
 
 .contact-content h2 {
@@ -489,8 +493,8 @@ button {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-top: 1px solid rgba(16, 26, 14, .4);
-    border-bottom: 1px solid rgba(16, 26, 14, .4);
+    border-top: 1px solid rgba(255,255,255,.12);
+    border-bottom: 1px solid rgba(255,255,255,.12);
     padding: 30px 0;
     font: 500 clamp(25px, 4vw, 50px) "Manrope";
     letter-spacing: -.04em;
@@ -507,7 +511,7 @@ button {
 
 .contact-orbit {
     position: absolute;
-    border: 1px solid rgba(16, 26, 14, .18);
+    border: 1px solid rgba(255,255,255,.06);
     border-radius: 50%;
 }
 
@@ -947,10 +951,15 @@ button {
     border: 0;
     border-radius: 999px;
     padding: 16px 20px;
-    background: var(--lime);
-    color: #10180d;
+    background:#111c26;
+    color:#fff;
     font-weight: 700;
     cursor: pointer;
+}
+
+.form-submit:hover {
+    background: var(--lime);
+    color:#10180d;
 }
 
 .form-submit:disabled {
@@ -1861,4 +1870,57 @@ button {
         margin-top: 38px;
         font-size: clamp(25px, 7vw, 34px);
     }
+}
+
+
+/* Why WebRemote ----------------------------------------------------------- */
+.why-panel {
+    position: relative;
+    z-index: 4;
+    padding: 130px 0;
+    overflow: hidden;
+    color: #eef3f6;
+    background: radial-gradient(circle at 82% 10%, rgba(201,255,74,.09), transparent 28%), linear-gradient(145deg,#0c1824 0%,#07111c 62%,#0a1420 100%);
+}
+.why-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: .42;
+    background-image: linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px), linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+    background-size: 64px 64px;
+    mask-image: linear-gradient(to bottom,#000,transparent 92%);
+}
+.why-panel .panel-inner { position: relative; z-index: 1; }
+.why-heading { align-items: end; margin-bottom: 56px; }
+.why-heading .section-number { color: var(--lime); }
+.why-heading h2 { max-width: 760px; }
+.why-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.why-card {
+    min-height: 255px;
+    display: flex;
+    flex-direction: column;
+    padding: 28px;
+    border: 1px solid rgba(255,255,255,.11);
+    border-radius: 24px;
+    background: rgba(255,255,255,.035);
+    backdrop-filter: blur(14px);
+    transition: transform .28s ease,border-color .28s ease,background .28s ease;
+}
+.why-card:hover { transform: translateY(-6px); border-color: rgba(201,255,74,.42); background: rgba(255,255,255,.065); }
+.why-card-wide { grid-column: 1/-1; min-height: 210px; }
+.why-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: auto; }
+.why-number { color: rgba(255,255,255,.38); font-size: 11px; letter-spacing: .16em; }
+.why-indicator { width: 9px; height: 9px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 18px rgba(201,255,74,.55); }
+.why-card h3 { margin: 52px 0 14px; font: 500 clamp(25px,2.7vw,40px)/1.08 "Manrope",sans-serif; letter-spacing: -.045em; }
+.why-card p { max-width: 620px; margin: 0; color: rgba(255,255,255,.62); font-size: 15px; line-height: 1.67; }
+.why-card-wide h3 { margin-top: 38px; }
+
+@media (max-width: 900px) {
+    .why-panel { padding: 82px 0 68px; border-radius: 24px 24px 0 0; }
+    .why-heading { margin-bottom: 34px; }
+    .why-grid { grid-template-columns: 1fr; }
+    .why-card,.why-card-wide { grid-column: auto; min-height: 0; padding: 24px 20px; }
+    .why-card h3,.why-card-wide h3 { margin-top: 38px; font-size: clamp(25px,7vw,34px); }
 }
