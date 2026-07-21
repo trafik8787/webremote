@@ -278,6 +278,10 @@ const resetContactForm = () => {
 }
 
 async function submitContactForm() {
+  if (formStatus.value === 'sending' || formStatus.value === 'sent') {
+    return
+  }
+
   if (!turnstileToken.value) {
     formStatus.value = 'verification-required'
     return
@@ -303,10 +307,19 @@ async function submitContactForm() {
         },
     )
 
-    const result = await response.json()
+    const responseBody = await response.text()
+    let result = null
 
-    if (!response.ok || !result.success) {
-      throw new Error(result.message || 'Unable to send request')
+    if (responseBody) {
+      try {
+        result = JSON.parse(responseBody)
+      } catch {
+        // A successful HTTP status is sufficient when the API returns plain text.
+      }
+    }
+
+    if (!response.ok || result?.success === false) {
+      throw new Error(result?.message || 'Unable to send request')
     }
 
     formStatus.value = 'sent'
@@ -332,6 +345,11 @@ function handleTurnstileExpired() {
 
 function handleTurnstileError() {
   turnstileToken.value = ''
+
+  if (formStatus.value === 'sending' || formStatus.value === 'sent') {
+    return
+  }
+
   formStatus.value = 'verification-error'
 }
 
