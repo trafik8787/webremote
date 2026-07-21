@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import TurnstileWidget from './TurnstileWidget.vue'
 
 type ContactStatus =
@@ -65,9 +65,6 @@ const emit = defineEmits<{
 }>()
 
 const turnstileWidget = ref<TurnstileWidgetExpose | null>(null)
-const turnstileRequested = ref(false)
-const contactFormElement = ref<HTMLFormElement | null>(null)
-let contactFormObserver: IntersectionObserver | null = null
 
 const successContent = computed(() => props.locale === 'uk'
   ? {
@@ -99,23 +96,6 @@ function resetTurnstile() {
   turnstileWidget.value?.reset()
 }
 
-function requestTurnstile() {
-  turnstileRequested.value = true
-  contactFormObserver?.disconnect()
-  contactFormObserver = null
-}
-
-onMounted(() => {
-  if (!contactFormElement.value || !('IntersectionObserver' in window)) return
-
-  contactFormObserver = new IntersectionObserver(([entry]) => {
-    if (entry?.isIntersecting) requestTurnstile()
-  }, { threshold: 0.1 })
-  contactFormObserver.observe(contactFormElement.value)
-})
-
-onBeforeUnmount(() => contactFormObserver?.disconnect())
-
 defineExpose({ resetTurnstile })
 </script>
 
@@ -137,10 +117,8 @@ defineExpose({ resetTurnstile })
           <Transition name="contact-swap" mode="out-in">
             <form
               v-if="status !== 'sent'"
-              ref="contactFormElement"
               key="contact-form"
               class="contact-form"
-              @focusin.once="requestTurnstile"
               @submit.prevent="emit('submit')"
             >
               <h3>{{ content.formTitle }}</h3>
@@ -188,7 +166,7 @@ defineExpose({ resetTurnstile })
               </div>
 
               <TurnstileWidget
-                v-if="turnstileSiteKey && turnstileRequested"
+                v-if="turnstileSiteKey"
                 ref="turnstileWidget"
                 class="form-wide"
                 :site-key="turnstileSiteKey"
@@ -197,12 +175,6 @@ defineExpose({ resetTurnstile })
                 @expired="emit('turnstile-expired')"
                 @error="handleTurnstileError"
               />
-
-              <div
-                v-else-if="turnstileSiteKey"
-                class="turnstile-widget form-wide"
-                aria-hidden="true"
-              ></div>
 
               <p v-else class="form-error form-wide">
                 TURNSTILE_SITE_KEY is not configured.
