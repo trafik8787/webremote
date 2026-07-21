@@ -35,7 +35,7 @@ onMounted(() => {
   const loadScene = () => {
     const schedule = window.requestIdleCallback ?? ((callback) => window.setTimeout(callback, 1))
     schedule(() => {
-      sceneSrc.value = '/three/scene.html'
+      sceneSrc.value = `/three/scene.html?v=${__SCENE_VERSION__}`
     })
   }
 

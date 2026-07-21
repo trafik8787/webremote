@@ -1,6 +1,8 @@
 import { defineConfig, type Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
+const sceneVersion = Date.now().toString(36)
+
 function inlineCss(): Plugin {
   return {
     name: 'inline-css',
@@ -33,4 +35,7 @@ export default defineConfig({
   plugins: [vue(), inlineCss()],
   base: '/',
   envPrefix: ['VITE_', 'TURNSTILE_SITE_KEY', 'CONTACT_API_URL'],
+  define: {
+    __SCENE_VERSION__: JSON.stringify(sceneVersion),
+  },
 })
